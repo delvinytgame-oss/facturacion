@@ -9,12 +9,9 @@ import { ExpenseUpsert } from "@/pages/(app)/expenses/_components/expense-upsert
 import { Input } from "@/components/ui/input"
 import type { Expense } from "@/types"
 import { languageToLocale } from "@/lib/i18n"
-import { queryKeys } from "@/lib/query-keys"
 import { toast } from "sonner"
-import { useExpenses } from "@/hooks/queries"
+import { useCreateExpense, useExpenses } from "@/hooks/queries"
 import { usePageHeader } from "@/hooks/use-page-header"
-import { usePost } from "@/hooks/use-fetch"
-import { useQueryClient } from "@tanstack/react-query"
 import { useTranslation } from "react-i18next"
 
 function csvEscape(value: string) {
@@ -33,8 +30,7 @@ export default function ExpensesPage() {
     const [upsertOpen, setUpsertOpen] = useState(false)
     const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null)
 
-    const queryClient = useQueryClient()
-    const { trigger: createTrigger } = usePost("/api/expenses")
+    const createExpense = useCreateExpense()
 
     usePageHeader(t("sidebar.navigation.expenses"))
 
@@ -91,14 +87,13 @@ export default function ExpensesPage() {
 
     const handleDuplicate = async (expense: Expense) => {
         try {
-            await createTrigger({
+            await createExpense.mutateAsync({
                 description: expense.description,
                 amount: expense.amount,
                 currency: expense.currency,
                 date: new Date(),
-                notes: expense.notes,
+                notes: expense.notes || undefined,
             })
-            queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() })
             toast.success(t("expenses.upsert.messages.duplicateSuccess"))
         } catch (err) {
             console.error(err)

@@ -2,9 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { queryKeys } from "@/lib/query-keys"
-import { usePatch, usePost } from "@/hooks/use-fetch"
-import { useQueryClient } from "@tanstack/react-query"
+import { useCreateExpense, useUpdateExpense } from "@/hooks/queries"
 
 import { BetterInput } from "@/components/better-input"
 import { Button } from "@/components/ui/button"
@@ -28,7 +26,6 @@ interface ExpenseUpsertProps {
 export function ExpenseUpsert({ expense, open, onOpenChange }: ExpenseUpsertProps) {
     const { t } = useTranslation()
     const isEdit = !!expense
-    const queryClient = useQueryClient()
 
     const expenseSchema = z.object({
         description: z.string().min(1, t("expenses.upsert.form.description.errors.required")),
@@ -42,8 +39,8 @@ export function ExpenseUpsert({ expense, open, onOpenChange }: ExpenseUpsertProp
 
     type ExpenseFormValues = z.infer<typeof expenseSchema>
 
-    const { trigger: createTrigger, loading: creating } = usePost("/api/expenses")
-    const { trigger: updateTrigger, loading: updating } = usePatch(`/api/expenses/${expense?.id || ""}`)
+    const createExpense = useCreateExpense()
+    const updateExpense = useUpdateExpense()
 
     const form = useForm<ExpenseFormValues>({
         resolver: zodResolver(expenseSchema),
@@ -78,9 +75,11 @@ export function ExpenseUpsert({ expense, open, onOpenChange }: ExpenseUpsertProp
 
     const onSubmit = async (data: ExpenseFormValues) => {
         try {
-            const trigger = isEdit ? updateTrigger : createTrigger
-            await trigger(data)
-            queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() })
+            if (isEdit && expense) {
+                await updateExpense.mutateAsync({ ...data, id: expense.id })
+            } else {
+                await createExpense.mutateAsync(data)
+            }
             toast.success(
                 isEdit ? t("expenses.upsert.messages.updateSuccess") : t("expenses.upsert.messages.addSuccess"),
             )
@@ -185,7 +184,7 @@ export function ExpenseUpsert({ expense, open, onOpenChange }: ExpenseUpsertProp
                             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                 {t("expenses.actions.cancel")}
                             </Button>
-                            <Button type="submit" loading={creating || updating} dataCy="expense-submit">
+                            <Button type="submit" loading={createExpense.isPending || updateExpense.isPending} dataCy="expense-submit">
                                 {isEdit ? t("expenses.actions.save") : t("expenses.actions.add")}
                             </Button>
                         </div>

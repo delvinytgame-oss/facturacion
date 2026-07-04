@@ -4,11 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 
 import { Button } from "@/components/ui/button"
 import type { Expense } from "@/types"
-import { authenticatedFetch } from "@/hooks/use-fetch"
-import { queryKeys } from "@/lib/query-keys"
 import { toast } from "sonner"
-import { useQueryClient } from "@tanstack/react-query"
-import { useState } from "react"
+import { useDeleteExpense } from "@/hooks/queries"
 import { useTranslation } from "react-i18next"
 
 export function ExpenseDeleteDialog({
@@ -19,26 +16,18 @@ export function ExpenseDeleteDialog({
     onOpenChange: (open: boolean) => void
 }) {
     const { t } = useTranslation()
-    const queryClient = useQueryClient()
-    const [loading, setLoading] = useState(false)
+    const deleteExpense = useDeleteExpense()
     const open = !!expense
 
     const handleDelete = async () => {
         if (!expense) return
-        setLoading(true)
         try {
-            const res = await authenticatedFetch(`${import.meta.env.VITE_BACKEND_URL || ""}/api/expenses/${expense.id}`, {
-                method: "DELETE",
-            })
-            if (!res.ok) throw new Error("Delete failed")
-            queryClient.invalidateQueries({ queryKey: queryKeys.expenses.list() })
+            await deleteExpense.mutateAsync(expense.id)
             toast.success(t("expenses.upsert.messages.deleteSuccess"))
             onOpenChange(false)
         } catch (err) {
             console.error(err)
             toast.error(t("expenses.upsert.messages.deleteError"))
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -55,10 +44,10 @@ export function ExpenseDeleteDialog({
                     </p>
 
                     <div className="flex justify-end gap-2">
-                        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
+                        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={deleteExpense.isPending}>
                             {t("expenses.actions.cancel")}
                         </Button>
-                        <Button variant="destructive" onClick={handleDelete} loading={loading} dataCy="expense-delete-confirm">
+                        <Button variant="destructive" onClick={handleDelete} loading={deleteExpense.isPending} dataCy="expense-delete-confirm">
                             {t("expenses.actions.delete")}
                         </Button>
                     </div>

@@ -406,7 +406,7 @@ const defaultPaymentTemplate = `
 </body>
 </html>
 `
-interface TemplateSettings {
+export interface TemplateSettings {
     templateType: "invoice" | "quote" | "payment"
     fontFamily: string
     primaryColor: string

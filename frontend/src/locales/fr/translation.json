@@ -446,6 +446,10 @@
                 "cancel": "Annuler",
                 "create": "Créer le devis",
                 "save": "Enregistrer les modifications"
+            },
+            "messages": {
+                "updateSuccess": "Devis mis à jour avec succès",
+                "updateError": "Erreur lors de la mise à jour du devis"
             }
         },
         "view": {
@@ -489,7 +493,13 @@
             }
         },
         "pdf": {
-            "title": "Devis {{number}} - PDF"
+            "title": "Devis {{number}} - PDF",
+            "edit": {
+                "toggle": "Édition",
+                "saveQuote": "Sauvegarder le devis",
+                "saveSettings": "Sauvegarder les paramètres",
+                "fitToWidth": "Ajuster à la largeur"
+            }
         }
     },
     "invoices": {

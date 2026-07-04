@@ -445,6 +445,10 @@
                 "cancel": "Cancel",
                 "create": "Create Quote",
                 "save": "Save Changes"
+            },
+            "messages": {
+                "updateSuccess": "Quote updated successfully",
+                "updateError": "Error updating quote"
             }
         },
         "view": {
@@ -488,7 +492,13 @@
             }
         },
         "pdf": {
-            "title": "Quote {{number}} - PDF"
+            "title": "Quote {{number}} - PDF",
+            "edit": {
+                "toggle": "Edit",
+                "saveQuote": "Save quote",
+                "saveSettings": "Save settings",
+                "fitToWidth": "Fit to width"
+            }
         }
     },
     "invoices": {

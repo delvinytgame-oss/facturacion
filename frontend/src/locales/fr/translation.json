@@ -1081,6 +1081,80 @@
             "description": "Êtes-vous sûr de vouloir supprimer \"{{name}}\" ? Cette action est irréversible."
         }
     },
+    "expenses": {
+        "search": {
+            "placeholder": "Rechercher des dépenses..."
+        },
+        "actions": {
+            "add": "Ajouter une dépense",
+            "export": "Exporter en CSV",
+            "cancel": "Annuler",
+            "save": "Enregistrer",
+            "delete": "Supprimer"
+        },
+        "table": {
+            "emptyState": "Aucune dépense pour ce mois",
+            "columns": {
+                "description": "Description",
+                "amount": "Montant",
+                "date": "Date",
+                "notes": "Notes",
+                "actions": "Actions"
+            },
+            "tooltips": {
+                "duplicate": "Dupliquer la dépense",
+                "edit": "Modifier la dépense",
+                "delete": "Supprimer la dépense"
+            }
+        },
+        "upsert": {
+            "title": {
+                "create": "Ajouter une dépense",
+                "edit": "Modifier la dépense"
+            },
+            "form": {
+                "description": {
+                    "label": "Description",
+                    "placeholder": "ex: Fournitures de bureau",
+                    "errors": {
+                        "required": "La description est requise"
+                    }
+                },
+                "amount": {
+                    "label": "Montant",
+                    "placeholder": "0.00",
+                    "errors": {
+                        "required": "Le montant est requis",
+                        "min": "Le montant doit être positif"
+                    }
+                },
+                "currency": {
+                    "label": "Devise"
+                },
+                "date": {
+                    "label": "Date"
+                },
+                "notes": {
+                    "label": "Notes",
+                    "placeholder": "Notes optionnelles"
+                }
+            },
+            "messages": {
+                "addSuccess": "Dépense ajoutée",
+                "addError": "Échec de l'ajout de la dépense",
+                "updateSuccess": "Dépense mise à jour",
+                "updateError": "Échec de la mise à jour de la dépense",
+                "deleteSuccess": "Dépense supprimée",
+                "deleteError": "Échec de la suppression de la dépense",
+                "duplicateSuccess": "Dépense dupliquée à la date d'aujourd'hui",
+                "duplicateError": "Échec de la duplication de la dépense"
+            }
+        },
+        "delete": {
+            "title": "Supprimer la dépense",
+            "description": "Êtes-vous sûr de vouloir supprimer \"{{description}}\" ? Cette action ne peut pas être annulée."
+        }
+    },
     "paymentMethods": {
         "title": "Méthodes de paiement",
         "description": "Gérez des méthodes de paiement réutilisables (IBAN, PayPal, Espèces...)",
@@ -1765,6 +1839,7 @@
             "quotes": "Devis",
             "invoices": "Factures",
             "payments": "Paiements",
+            "expenses": "Dépenses",
             "clients": "Clients",
             "articles": "Articles",
             "paymentMethods": "Méthodes de paiement",

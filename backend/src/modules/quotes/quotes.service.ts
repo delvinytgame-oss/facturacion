@@ -14,7 +14,8 @@ import { formatDate } from '@/utils/date';
 import { logger } from '@/logger/logger.service';
 import prisma from '@/prisma/prisma.service';
 import { calculateDiscountedTotals, clampDiscountRate } from '@/utils/financial';
-import { formatItemDescription } from '@/utils/format-text';
+import { formatRichText } from '@/utils/format-text';
+import { getDraftWatermarkLabel } from '@/utils/watermark';
 
 @Injectable()
 export class QuotesService {
@@ -448,7 +449,7 @@ export class QuotesService {
             currency: quote.currency,
             items: quote.items.map(i => ({
                 name: i.name,
-                description: formatItemDescription(i.description),
+                description: formatRichText(i.description),
                 quantity: Number.isInteger(i.quantity) ? i.quantity.toString() : i.quantity.toFixed(3).replace(/\.?0+$/, ''),
                 unitPrice: i.unitPrice.toFixed(2),
                 vatRate: i.vatRate,
@@ -475,8 +476,10 @@ export class QuotesService {
             tableTextColor: getInvertColor(config.secondaryColor),
             includeLogo: config.includeLogo,
             logoB64: config?.logoB64 ?? '',
+            isDraft: quote.status === 'DRAFT',
+            draftLabel: getDraftWatermarkLabel(quote.company.country),
             noteExists: !!quote.notes,
-            notes: (quote.notes || '').replace(/\n/g, '<br>'),
+            notes: formatRichText(quote.notes).replace(/\n/g, '<br>'),
             labels: {
                 quote: config.quote,
                 quoteFor: config.quoteFor,
@@ -505,7 +508,7 @@ export class QuotesService {
             },
         });
 
-        const pdfBuffer = await getPDF(html);
+        const pdfBuffer = await getPDF(html, config.padding);
 
         return pdfBuffer;
     }

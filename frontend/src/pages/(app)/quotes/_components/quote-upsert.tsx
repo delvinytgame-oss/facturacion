@@ -515,9 +515,6 @@ export function QuoteUpsert({ quote, open, onOpenChange }: QuoteUpsertDialogProp
                                                                         )}
                                                                     />
                                                                 </FormControl>
-                                                                <FormDescription>
-                                                                    {t(`quotes.upsert.form.items.description.hint`)}
-                                                                </FormDescription>
                                                                 <FormMessage />
                                                             </FormItem>
                                                         )}
@@ -528,6 +525,12 @@ export function QuoteUpsert({ quote, open, onOpenChange }: QuoteUpsertDialogProp
                                         </div>
                                     </SortableContext>
                                 </DndContext>
+
+                                {fields.length > 0 && (
+                                    <p className="text-sm text-muted-foreground">
+                                        {t(`quotes.upsert.form.items.description.hint`)}
+                                    </p>
+                                )}
 
                                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                                     <Button

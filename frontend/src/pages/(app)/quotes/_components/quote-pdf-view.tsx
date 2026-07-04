@@ -63,7 +63,7 @@ export function QuotePdfModal({ quote, onOpenChange }: QuotePdfModalProps) {
         onOpenChange(open)
       }}
     >
-      <DialogContent className="!max-w-6xl w-[95vw] h-[90dvh] overflow-hidden flex flex-col">
+      <DialogContent className="!max-w-3xl w-[90vw] h-[90dvh] overflow-hidden flex flex-col">
         <DialogHeader className="flex flex-row items-center justify-between gap-4 pr-8">
           <DialogTitle>{t("quotes.pdf.title", { number: quote?.number })}</DialogTitle>
           <Button type="button" variant="outline" size="sm" onClick={handleDownload} disabled={!pdfUrl}>

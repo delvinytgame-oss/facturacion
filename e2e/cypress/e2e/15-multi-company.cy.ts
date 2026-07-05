@@ -27,15 +27,21 @@ describe('Multi-Company Switcher E2E', () => {
         cy.get('[data-cy="sidebar-company-button"]', { timeout: 15000 }).should('contain.text', 'Globex Corporation');
     });
 
-    it('isolates data between companies: a client created in Globex is not visible from Acme', () => {
+    it('isolates data between companies: Acme\'s clients are not visible from Globex', () => {
         cy.visit('/clients');
         cy.get('[data-cy="sidebar-company-button"]', { timeout: 15000 }).should('contain.text', 'Globex Corporation');
-        cy.contains(/acme/i).should('not.exist');
+        // Globex is a brand-new company with zero clients — the list must show
+        // the empty state, not any of Acme's clients (created by 05-clients.cy.ts).
+        // Checking for the literal substring "acme" would also match the logged-in
+        // user's own email (john.doe@acme.org), which is unrelated to company data.
+        cy.contains(/no clients yet/i, { timeout: 10000 }).should('be.visible');
 
-        // Switch back to Acme Corp and confirm Globex-only data stays hidden
+        // Switch back to Acme Corp and confirm its clients are visible again
         cy.get('[data-cy="sidebar-company-button"]').click();
         cy.get('[data-cy="sidebar-company-switch-item"]').contains('Acme Corp').click();
         cy.get('[data-cy="sidebar-company-button"]', { timeout: 15000 }).should('contain.text', 'Acme Corp');
+        cy.visit('/clients');
+        cy.contains(/no clients yet/i).should('not.exist');
     });
 
     it('lists both companies with roles in the switcher', () => {

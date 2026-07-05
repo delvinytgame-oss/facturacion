@@ -167,10 +167,17 @@ export function Sidebar() {
 
     return (
         <RootSidebar collapsible="icon">
-            <OnBoarding isOpen={onboardingOpen} onOpenChange={setOnboardingOpen} />
+            {/* Both the first-run auto-opened onboarding and the switcher's
+                "create new company" action create a brand-new company via
+                POST /api/companies — POST /api/company/info is edit-only and
+                requires an already-active company, which doesn't exist yet
+                in either case. */}
             <OnBoarding
-                isOpen={createCompanyOpen}
-                onOpenChange={setCreateCompanyOpen}
+                isOpen={onboardingOpen || createCompanyOpen}
+                onOpenChange={(open) => {
+                    setOnboardingOpen(open)
+                    setCreateCompanyOpen(open)
+                }}
                 endpoint="/api/companies"
                 onSuccess={handleCompanyCreated}
             />

@@ -62,9 +62,13 @@ export default function OnBoarding({
     setIsLoading(true)
     try {
       const created = await trigger(values)
+      if (!created) {
+        toast.error(t("settings.company.messages.updateError"))
+        return
+      }
       toast.success(t("settings.company.messages.updateSuccess"))
       onOpenChange?.(false)
-      if (onSuccess && created) {
+      if (onSuccess) {
         onSuccess(created)
       } else {
         navigate("/settings/company")

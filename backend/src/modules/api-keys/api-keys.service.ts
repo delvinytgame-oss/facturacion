@@ -5,7 +5,7 @@ import prisma from '@/prisma/prisma.service';
 
 @Injectable()
 export class ApiKeysService {
-  async create(userId: string, name: string) {
+  async create(companyId: string, creatorUserId: string, name: string) {
     if (!name?.trim()) {
       throw new BadRequestException('Name is required');
     }
@@ -18,7 +18,8 @@ export class ApiKeysService {
         name: name.trim(),
         keyPrefix: key.slice(0, 12),
         keyHash,
-        userId,
+        userId: creatorUserId,
+        companyId,
       },
     });
 
@@ -31,18 +32,18 @@ export class ApiKeysService {
     };
   }
 
-  async list(userId: string) {
+  async list(companyId: string) {
     const apiKeys = await prisma.apiKey.findMany({
-      where: { userId },
+      where: { companyId },
       orderBy: { createdAt: 'desc' },
     });
 
     return apiKeys.map(({ keyHash, ...apiKey }) => apiKey);
   }
 
-  async revoke(userId: string, id: string) {
+  async revoke(companyId: string, id: string) {
     const apiKey = await prisma.apiKey.findUnique({ where: { id } });
-    if (!apiKey || apiKey.userId !== userId) {
+    if (!apiKey || apiKey.companyId !== companyId) {
       throw new NotFoundException('API key not found');
     }
 

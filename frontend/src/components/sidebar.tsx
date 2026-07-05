@@ -1,5 +1,6 @@
 import {
     Building2,
+    Check,
     ChevronsUpDown,
     CreditCard,
     FileText,
@@ -7,6 +8,7 @@ import {
     LogOut,
     Moon,
     Package,
+    Plus,
     Receipt,
     ReceiptText,
     Settings,
@@ -31,14 +33,17 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar"
 
+import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import OnBoarding from "./onboarding"
 import type React from "react"
 import { Skeleton } from "./ui/skeleton"
 import { authClient } from "@/lib/auth"
 import { useEffect, useRef, useState } from "react"
+import { usePost } from "@/hooks/use-fetch"
+import type { Company } from "@/types"
 
-import { useCompany } from "@/hooks/queries"
+import { useCompanies, useCompany } from "@/hooks/queries"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useTheme } from "./theme-provider"
 import { useTranslation } from "react-i18next"
@@ -50,25 +55,46 @@ export function Sidebar() {
     const location = useLocation()
 
     const { data, isPending: userLoading } = authClient.useSession()
+    const { companies, activeCompanyId, isPending: companiesLoading } = useCompanies()
 
     const { setTheme } = useTheme()
-    const { data: company, isLoading: companyLoading } = useCompany()
+    const { data: company } = useCompany()
     const navigate = useNavigate()
 
     const [onboardingOpen, setOnboardingOpen] = useState(false)
+    const [createCompanyOpen, setCreateCompanyOpen] = useState(false)
     const hasAutoOpenedOnboarding = useRef(false)
+
+    const { trigger: switchCompanyApi } = usePost<{ success: boolean }>("/api/companies/switch")
 
     useEffect(() => {
         if (
             !hasAutoOpenedOnboarding.current &&
-            !companyLoading &&
-            (!company || !company.name) &&
+            !companiesLoading &&
+            companies.length === 0 &&
             location.pathname !== "/settings/company"
         ) {
             hasAutoOpenedOnboarding.current = true
             setOnboardingOpen(true)
         }
-    }, [companyLoading, company, location.pathname])
+    }, [companiesLoading, companies, location.pathname])
+
+    const switchCompany = async (companyId: string) => {
+        if (companyId === activeCompanyId) return
+        await switchCompanyApi({ companyId })
+        // Full reload: company-scoped data is fetched by two different
+        // mechanisms across the app (TanStack Query hooks and the older
+        // useGet/usePost hooks in use-fetch.ts, e.g. every settings page).
+        // invalidateQueries() only refreshes the former, leaving the latter
+        // showing the previous company's data — a reload guarantees every
+        // page re-fetches under the newly active company.
+        window.location.reload()
+    }
+
+    const handleCompanyCreated = async (created: Company) => {
+        await switchCompanyApi({ companyId: created.id })
+        window.location.reload()
+    }
 
     const items: { title: string; icon: React.ReactNode; url: string, dataCy: string }[] = [
         {
@@ -135,24 +161,74 @@ export function Sidebar() {
     return (
         <RootSidebar collapsible="icon">
             <OnBoarding isOpen={onboardingOpen} onOpenChange={setOnboardingOpen} />
+            <OnBoarding
+                isOpen={createCompanyOpen}
+                onOpenChange={setCreateCompanyOpen}
+                endpoint="/api/companies"
+                onSuccess={handleCompanyCreated}
+            />
 
             <SidebarHeader className="px-2">
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton
-                            size="lg"
-                            className="cursor-pointer"
-                            onClick={() => navigate("/settings/company")}
-                            data-cy="sidebar-company-button"
-                        >
-                            <div className="bg-accent text-accent-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                                <Building2 className="size-4" />
-                            </div>
-                            <div className="grid flex-1 text-left text-sm leading-tight">
-                                <span className="truncate font-medium">{company?.name}</span>
-                                <span className="truncate text-xs">{t("sidebar.company.plan")}</span>
-                            </div>
-                        </SidebarMenuButton>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger className="cursor-pointer" asChild>
+                                <SidebarMenuButton
+                                    size="lg"
+                                    className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                                    data-cy="sidebar-company-button"
+                                >
+                                    <div className="bg-accent text-accent-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                                        <Building2 className="size-4" />
+                                    </div>
+                                    <div className="grid flex-1 text-left text-sm leading-tight">
+                                        <span className="truncate font-medium">{company?.name}</span>
+                                        <span className="truncate text-xs">{t("sidebar.company.plan")}</span>
+                                    </div>
+                                    {companies.length > 1 && <ChevronsUpDown className="ml-auto size-4" />}
+                                </SidebarMenuButton>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                                align="start"
+                                side={isMobile ? "bottom" : "right"}
+                            >
+                                <DropdownMenuLabel className="text-xs text-muted-foreground px-2 py-1.5">
+                                    {t("sidebar.company.switcherLabel")}
+                                </DropdownMenuLabel>
+                                <DropdownMenuGroup>
+                                    {companies.map((c) => (
+                                        <DropdownMenuItem
+                                            key={c.id}
+                                            className="cursor-pointer flex items-center gap-2"
+                                            data-cy="sidebar-company-switch-item"
+                                            onClick={() => switchCompany(c.id)}
+                                        >
+                                            {c.id === activeCompanyId ? (
+                                                <Check className="size-4 shrink-0" />
+                                            ) : (
+                                                <span className="size-4 shrink-0" />
+                                            )}
+                                            <span className="flex-1 truncate">{c.name}</span>
+                                            <Badge variant="outline" className="text-[10px]">{c.role}</Badge>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuGroup>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    data-cy="sidebar-create-company-item"
+                                    onClick={() => setCreateCompanyOpen(true)}
+                                >
+                                    <Plus className="size-4" />
+                                    {t("sidebar.company.createNew")}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer" onClick={() => navigate("/settings/company")}>
+                                    <Settings className="size-4" />
+                                    {t("sidebar.company.manage")}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarHeader>

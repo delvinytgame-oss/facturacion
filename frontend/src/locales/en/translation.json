@@ -1182,6 +1182,7 @@
             "account": "Account",
             "logs": "Logs",
             "invitations": "Invitations",
+            "members": "Members",
             "dangerZone": "Danger Zone",
             "plugins": "Plugins",
             "webhooks": "Webhooks",
@@ -1193,6 +1194,7 @@
                 "description": "Generate a new invitation code to invite someone to create an account",
                 "expiresIn": "Expires in (days)",
                 "expiresPlaceholder": "Leave empty for no expiration",
+                "role": "Role",
                 "button": "Generate Code",
                 "creating": "Generating..."
             },
@@ -1200,6 +1202,7 @@
                 "title": "Your Invitation Codes",
                 "description": "Manage the invitation codes you have created",
                 "code": "Code",
+                "role": "Role",
                 "status": "Status",
                 "createdAt": "Created",
                 "expiresAt": "Expires",
@@ -1207,6 +1210,11 @@
                 "actions": "Actions",
                 "empty": "You haven't created any invitation codes yet",
                 "noExpiry": "Never"
+            },
+            "roles": {
+                "owner": "Owner",
+                "admin": "Admin",
+                "member": "Member"
             },
             "status": {
                 "active": "Active",
@@ -1220,6 +1228,23 @@
                 "deleteSuccess": "Invitation code deleted",
                 "deleteError": "Failed to delete invitation code",
                 "codeCopied": "Code copied to clipboard"
+            }
+        },
+        "members": {
+            "title": "Company Members",
+            "description": "Manage who has access to this company and their role",
+            "empty": "No members yet",
+            "list": {
+                "name": "Name",
+                "email": "Email",
+                "role": "Role",
+                "actions": "Actions"
+            },
+            "messages": {
+                "roleUpdateSuccess": "Member role updated",
+                "roleUpdateError": "Failed to update member role",
+                "removeSuccess": "Member removed",
+                "removeError": "Failed to remove member"
             }
         },
         "company": {
@@ -1790,7 +1815,10 @@
             "settings": "Settings"
         },
         "company": {
-            "plan": "Entreprise"
+            "plan": "Entreprise",
+            "switcherLabel": "Your companies",
+            "createNew": "Create new company",
+            "manage": "Manage company"
         },
         "menu": "Menu",
         "theme": {

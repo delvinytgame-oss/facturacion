@@ -108,7 +108,8 @@
 		"rootDir": "src",
 		"testRegex": ".*\\.spec\\.ts$",
 		"moduleNameMapper": {
-			"^@/(.*)$": "<rootDir>/$1"
+			"^@/(.*)$": "<rootDir>/$1",
+			"^(\\.{1,2}/.*)\\.js$": "$1"
 		},
 		"transform": {
 			"^.+\\.(t|j)s$": "ts-jest"

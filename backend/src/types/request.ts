@@ -18,6 +18,12 @@ interface RequestWithUser extends Request {
     companyId: string | null
     role: CompanyRole | null
     companies: RequestCompany[]
+    // null for session auth (a human's access is governed by `role`, not
+    // scopes — they aren't scope-restricted at all). A string[] (possibly
+    // empty) for API-key auth, restricting the caller to exactly those
+    // scopes regardless of the synthetic ADMIN role AuthGuard grants API
+    // keys — see @/utils/scope-check's hasScope().
+    scopes: string[] | null
 }
 
 export { RequestWithUser };

@@ -27,6 +27,7 @@
 		"@documenso/sdk-typescript": "^0.4.0",
 		"@fin.cx/einvoice": "^5.1.4",
 		"@getbrevo/brevo": "^5.0.4",
+		"@modelcontextprotocol/sdk": "^1.29.0",
 		"@nestjs/common": "^11.0.1",
 		"@nestjs/config": "^4.0.2",
 		"@nestjs/core": "^11.0.1",
@@ -59,7 +60,8 @@
 		"reflect-metadata": "^0.2.2",
 		"rxjs": "^7.8.1",
 		"simple-git": "^3.32.3",
-		"stream-buffers": "^3.0.3"
+		"stream-buffers": "^3.0.3",
+		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3.2.0",

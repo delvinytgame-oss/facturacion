@@ -941,6 +941,7 @@ model ApiKey {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyId  String
   company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scopes     String[]  @default([])
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
 

@@ -12,6 +12,7 @@ import { ConfigModule } from '@nestjs/config';
 import { DangerModule } from './modules/danger/danger.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DirectoryModule } from './modules/directory/directory.module';
+import { ExpensesModule } from './modules/expenses/expenses.module';
 import { HealthModule } from './modules/health/health.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
@@ -62,6 +63,7 @@ import { auth } from "./lib/auth"
     PluginsModule,
     RecurringInvoicesModule,
     PaymentMethodsModule,
+    ExpensesModule,
     StatsModule,
     WebhooksModule,
     InvitationsModule,

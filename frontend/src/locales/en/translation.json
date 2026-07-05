@@ -445,6 +445,10 @@
                 "cancel": "Cancel",
                 "create": "Create Quote",
                 "save": "Save Changes"
+            },
+            "messages": {
+                "updateSuccess": "Quote updated successfully",
+                "updateError": "Error updating quote"
             }
         },
         "view": {
@@ -488,7 +492,13 @@
             }
         },
         "pdf": {
-            "title": "Quote {{number}} - PDF"
+            "title": "Quote {{number}} - PDF",
+            "edit": {
+                "toggle": "Edit",
+                "saveQuote": "Save quote",
+                "saveSettings": "Save settings",
+                "fitToWidth": "Fit to width"
+            }
         }
     },
     "invoices": {
@@ -1076,6 +1086,80 @@
         },
         "delete": {
             "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+        }
+    },
+    "expenses": {
+        "search": {
+            "placeholder": "Search expenses..."
+        },
+        "actions": {
+            "add": "Add expense",
+            "export": "Export CSV",
+            "cancel": "Cancel",
+            "save": "Save",
+            "delete": "Delete"
+        },
+        "table": {
+            "emptyState": "No expenses for this month",
+            "columns": {
+                "description": "Description",
+                "amount": "Amount",
+                "date": "Date",
+                "notes": "Notes",
+                "actions": "Actions"
+            },
+            "tooltips": {
+                "duplicate": "Duplicate expense",
+                "edit": "Edit expense",
+                "delete": "Delete expense"
+            }
+        },
+        "upsert": {
+            "title": {
+                "create": "Add expense",
+                "edit": "Edit expense"
+            },
+            "form": {
+                "description": {
+                    "label": "Description",
+                    "placeholder": "e.g. Office supplies",
+                    "errors": {
+                        "required": "Description is required"
+                    }
+                },
+                "amount": {
+                    "label": "Amount",
+                    "placeholder": "0.00",
+                    "errors": {
+                        "required": "Amount is required",
+                        "min": "Amount must be positive"
+                    }
+                },
+                "currency": {
+                    "label": "Currency"
+                },
+                "date": {
+                    "label": "Date"
+                },
+                "notes": {
+                    "label": "Notes",
+                    "placeholder": "Optional notes"
+                }
+            },
+            "messages": {
+                "addSuccess": "Expense added",
+                "addError": "Failed to add expense",
+                "updateSuccess": "Expense updated",
+                "updateError": "Failed to update expense",
+                "deleteSuccess": "Expense deleted",
+                "deleteError": "Failed to delete expense",
+                "duplicateSuccess": "Expense duplicated to today's date",
+                "duplicateError": "Failed to duplicate expense"
+            }
+        },
+        "delete": {
+            "title": "Delete expense",
+            "description": "Are you sure you want to delete \"{{description}}\"? This action cannot be undone."
         }
     },
     "paymentMethods": {
@@ -1808,6 +1892,7 @@
             "quotes": "Quotes",
             "invoices": "Invoices",
             "payments": "Payments",
+            "expenses": "Expenses",
             "clients": "Clients",
             "articles": "Articles",
             "paymentMethods": "Payment Methods",

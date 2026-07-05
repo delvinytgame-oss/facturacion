@@ -12,7 +12,7 @@ import { baseTemplate } from '@/modules/invoices/templates/base.template';
 import { business } from '@tsclass/tsclass/dist_ts';
 import { finance } from '@fin.cx/einvoice/dist_ts/plugins';
 import { formatDate } from '@/utils/date';
-import { formatItemDescription } from '@/utils/format-text';
+import { formatRichText } from '@/utils/format-text';
 import { logger } from '@/logger/logger.service';
 import { parseAddress } from '@/utils/adress';
 import prisma from '@/prisma/prisma.service';
@@ -443,7 +443,7 @@ export class InvoicesService {
             currency: invoice.currency,
             items: invoice.items.map(i => ({
                 name: i.name,
-                description: formatItemDescription(i.description),
+                description: formatRichText(i.description),
                 quantity: Number.isInteger(i.quantity) ? i.quantity.toString() : i.quantity.toFixed(3).replace(/\.?0+$/, ''),
                 unitPrice: i.unitPrice.toFixed(2),
                 vatRate: (i.vatRate || 0).toFixed(2),

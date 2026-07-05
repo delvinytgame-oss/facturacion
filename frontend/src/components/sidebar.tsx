@@ -16,6 +16,7 @@ import {
     TrendingUp,
     User,
     Users,
+    Wallet,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu"
@@ -120,6 +121,12 @@ export function Sidebar() {
             icon: <Receipt className="w-4 h-4" />,
             url: "/payments",
             dataCy: "sidebar-payments-link",
+        },
+        {
+            title: t("sidebar.navigation.expenses"),
+            icon: <Wallet className="w-4 h-4" />,
+            url: "/expenses",
+            dataCy: "sidebar-expenses-link",
         },
         {
             title: t("sidebar.navigation.clients"),

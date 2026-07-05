@@ -7,7 +7,8 @@ import { baseTemplate } from '@/modules/quotes/templates/base.template';
 import { formatDate } from '@/utils/date';
 import prisma from '@/prisma/prisma.service';
 import { clampDiscountRate } from '@/utils/financial';
-import { formatItemDescription } from '@/utils/format-text';
+import { formatRichText } from '@/utils/format-text';
+import { getDraftWatermarkLabel } from '@/utils/watermark';
 
 export async function generateQuotePdf(id: string): Promise<Uint8Array> {
     const quote = await prisma.quote.findUnique({
@@ -76,7 +77,7 @@ export async function generateQuotePdf(id: string): Promise<Uint8Array> {
         currency: quote.currency,
         items: quote.items.map(i => ({
             name: i.name,
-            description: formatItemDescription(i.description),
+            description: formatRichText(i.description),
             quantity: i.quantity,
             unitPrice: i.unitPrice.toFixed(2),
             vatRate: i.vatRate,
@@ -103,8 +104,10 @@ export async function generateQuotePdf(id: string): Promise<Uint8Array> {
         tableTextColor: getInvertColor(config.secondaryColor),
         includeLogo: config.includeLogo,
         logoB64: config?.logoB64 ?? '',
+        isDraft: quote.status === 'DRAFT',
+        draftLabel: getDraftWatermarkLabel(quote.company.country),
         noteExists: !!quote.notes,
-        notes: (quote.notes || '').replace(/\n/g, '<br>'),
+        notes: formatRichText(quote.notes).replace(/\n/g, '<br>'),
         labels: {
             quote: config.quote,
             quoteFor: config.quoteFor,
@@ -133,6 +136,6 @@ export async function generateQuotePdf(id: string): Promise<Uint8Array> {
         },
     });
 
-    const pdfBuffer = await getPDF(html);
+    const pdfBuffer = await getPDF(html, config.padding);
     return pdfBuffer;
 }

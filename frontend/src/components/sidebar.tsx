@@ -232,7 +232,16 @@ export function Sidebar() {
                                 <DropdownMenuItem
                                     className="cursor-pointer"
                                     data-cy="sidebar-create-company-item"
-                                    onClick={() => setCreateCompanyOpen(true)}
+                                    onSelect={(e) => {
+                                        // Opening a Dialog directly from a DropdownMenuItem's own
+                                        // click races the menu's close/focus-return against the
+                                        // dialog's open/autofocus — the dialog can steal focus back
+                                        // from its own input mid-transition, dropping the first
+                                        // keystroke typed into it. Deferring to the next tick lets
+                                        // the dropdown finish closing first.
+                                        e.preventDefault()
+                                        setTimeout(() => setCreateCompanyOpen(true), 0)
+                                    }}
                                 >
                                     <Plus className="size-4" />
                                     {t("sidebar.company.createNew")}

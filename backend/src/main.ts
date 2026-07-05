@@ -1,5 +1,5 @@
 import * as bodyParser from 'body-parser';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -34,8 +34,16 @@ async function bootstrap() {
 
   // Resolve relative to this file, not cwd: entrypoint.sh `cd`s into
   // backend/src before starting node, but package.json only ever lives at
-  // the backend root (one level up from src/ in both dev and prod).
-  const { version } = JSON.parse(readFileSync(join(__dirname, '..', 'package.json'), 'utf-8'));
+  // the backend root. With tsc output at dist/src/, __dirname can be
+  // either src/ (ts-node) or dist/src/ (compiled), so try both depths.
+  const { version } = JSON.parse(
+    readFileSync(
+      [join(__dirname, '..', '..', 'package.json'), join(__dirname, '..', 'package.json')]
+        .find(existsSync)!
+        .replace(/\\/g, '/'),
+      'utf-8',
+    ),
+  );
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('Invoicerr API')

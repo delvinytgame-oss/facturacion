@@ -77,7 +77,7 @@ export function getInvertColor(hex: string): string {
     return luminance > 186 ? '#000000' : '#ffffff';
 }
 
-export const getPDF = async (html: string) => {
+export const getPDF = async (html: string, marginPx = 0) => {
     let browser: puppeteer.Browser;
     if (!process.env.PUPPETEER_EXECUTABLE_PATH) {
         browser = await puppeteer.launch({
@@ -94,7 +94,16 @@ export const getPDF = async (html: string) => {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: 'load' });
 
-    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true });
+    // Page margins must come from Puppeteer's own option, not CSS body margin:
+    // a CSS margin only applies once at the start/end of the document flow, so
+    // it's missing at the top of every page after the first when content spans
+    // multiple pages.
+    const margin = `${marginPx}px`;
+    const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: margin, right: margin, bottom: margin, left: margin },
+    });
 
     await browser.close();
 

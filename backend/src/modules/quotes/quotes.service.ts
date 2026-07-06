@@ -1,6 +1,6 @@
 import * as Handlebars from 'handlebars';
 
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateQuoteDto, EditQuotesDto } from '@/modules/quotes/dto/quotes.dto';
 import { PluginType, WebhookEvent } from '../../../prisma/generated/prisma/client';
 import { getInvertColor, getPDF } from '@/utils/pdf';
@@ -25,7 +25,7 @@ export class QuotesService {
         this.pluginsService = new PluginsService();
     }
 
-    async getQuotes(page: string) {
+    async getQuotes(companyId: string, page: string) {
         const pageNumber = parseInt(page, 10) || 1;
         const pageSize = 10;
         const skip = (pageNumber - 1) * pageSize;
@@ -34,6 +34,7 @@ export class QuotesService {
             skip,
             take: pageSize,
             where: {
+                companyId,
                 isActive: true,
             },
             orderBy: {
@@ -46,7 +47,7 @@ export class QuotesService {
             },
         });
 
-        const totalQuotes = await prisma.quote.count();
+        const totalQuotes = await prisma.quote.count({ where: { companyId } });
 
         // Attach payment method object when available so frontend can consume quote.paymentMethod as an object
         const quotesWithPM = await Promise.all(quotes.map(async (q: any) => {
@@ -60,8 +61,8 @@ export class QuotesService {
         return { pageCount: Math.ceil(totalQuotes / pageSize), quotes: quotesWithPM };
     }
 
-    async getQuotesTable(filters: { clientId?: string; year?: string; month?: string; sort?: 'asc' | 'desc' }) {
-        const where: Record<string, any> = { isActive: true };
+    async getQuotesTable(companyId: string, filters: { clientId?: string; year?: string; month?: string; sort?: 'asc' | 'desc' }) {
+        const where: Record<string, any> = { companyId, isActive: true };
 
         if (filters.clientId) {
             where.clientId = filters.clientId;
@@ -108,9 +109,10 @@ export class QuotesService {
         return quotesWithPM;
     }
 
-    async searchQuotes(query: string) {
+    async searchQuotes(companyId: string, query: string) {
         if (!query) {
             const results = await prisma.quote.findMany({
+                where: { companyId },
                 take: 10,
                 orderBy: {
                     number: 'asc',
@@ -135,6 +137,7 @@ export class QuotesService {
 
         const results = await prisma.quote.findMany({
             where: {
+                companyId,
                 isActive: true,
                 OR: [
                     { title: { contains: query } },
@@ -163,18 +166,13 @@ export class QuotesService {
         return resultsWithPM;
     }
 
-    async createQuote(body: CreateQuoteDto) {
+    async createQuote(companyId: string, body: CreateQuoteDto) {
         const { items, ...data } = body;
 
-        const company = await prisma.company.findFirst();
+        const company = await prisma.company.findUniqueOrThrow({ where: { id: companyId } });
 
-        if (!company) {
-            logger.error('No company found. Please create a company first.', { category: 'quote' });
-            throw new BadRequestException('No company found. Please create a company first.');
-        }
-
-        const client = await prisma.client.findUnique({
-            where: { id: body.clientId },
+        const client = await prisma.client.findFirst({
+            where: { id: body.clientId, companyId },
         });
 
         if (!client) {
@@ -234,7 +232,7 @@ export class QuotesService {
         return quote;
     }
 
-    async editQuote(body: EditQuotesDto) {
+    async editQuote(companyId: string, body: EditQuotesDto) {
         const { items, id, discountRate, ...data } = body;
 
         if (!id) {
@@ -242,14 +240,14 @@ export class QuotesService {
             throw new BadRequestException('Quote ID is required for editing');
         }
 
-        const existingQuote = await prisma.quote.findUnique({
-            where: { id },
+        const existingQuote = await prisma.quote.findFirst({
+            where: { id, companyId },
             include: { items: true }
         });
 
         if (!existingQuote) {
             logger.error('Quote not found', { category: 'quote', details: { id } });
-            throw new BadRequestException('Quote not found');
+            throw new NotFoundException('Quote not found');
         }
 
         const existingItemIds = existingQuote.items.map(i => i.id);
@@ -257,7 +255,7 @@ export class QuotesService {
 
         const itemIdsToDelete = existingItemIds.filter(id => !incomingItemIds.includes(id));
 
-        const company = await prisma.company.findFirst();
+        const company = await prisma.company.findUnique({ where: { id: companyId } });
         const isVatExemptFrance = !!(company?.exemptVat && (company?.country || '').toUpperCase() === 'FRANCE');
         const normalizedDiscountRate = clampDiscountRate(discountRate ?? existingQuote.discountRate);
         const totals = calculateDiscountedTotals(items, normalizedDiscountRate, { isVatExempt: isVatExemptFrance });
@@ -332,9 +330,9 @@ export class QuotesService {
         return updateQuote;
     }
 
-    async deleteQuote(id: string) {
-        const existingQuote = await prisma.quote.findUnique({
-            where: { id },
+    async deleteQuote(companyId: string, id: string) {
+        const existingQuote = await prisma.quote.findFirst({
+            where: { id, companyId },
             include: {
                 items: true,
                 client: true,
@@ -344,7 +342,7 @@ export class QuotesService {
 
         if (!existingQuote) {
             logger.error('Quote not found', { category: 'quote', details: { id } });
-            throw new BadRequestException('Quote not found');
+            throw new NotFoundException('Quote not found');
         }
 
         const deletedQuote = await prisma.quote.update({
@@ -367,10 +365,14 @@ export class QuotesService {
         return deletedQuote;
     }
 
-    async getQuotePdf(id: string): Promise<Uint8Array> {
+    // companyId is optional: the public (anonymous) signature-viewing flow
+    // (SignaturesService.getSignaturePdf) resolves a quote purely through an
+    // unguessable signature id, with no active company in scope. The
+    // authenticated quotes controller always passes it for tenant scoping.
+    async getQuotePdf(id: string, companyId?: string): Promise<Uint8Array> {
 
-        const quote = await prisma.quote.findUnique({
-            where: { id },
+        const quote = await prisma.quote.findFirst({
+            where: companyId ? { id, companyId } : { id },
             include: {
                 items: true,
                 client: true,

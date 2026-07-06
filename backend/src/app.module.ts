@@ -3,8 +3,10 @@ import { ApiKeysModule } from './modules/api-keys/api-keys.module';
 import { ArticlesModule } from './modules/articles/articles.module';
 import { AuthExtendedModule } from './modules/auth-extended/auth-extended.module';
 import { AuthGuard } from '@/guards/auth.guard';
+import { RolesGuard } from '@/guards/roles.guard';
 import { AuthModule } from '@thallesp/nestjs-better-auth';
 import { ClientsModule } from './modules/clients/clients.module';
+import { CompaniesModule } from './modules/companies/companies.module';
 import { CompanyModule } from './modules/company/company.module';
 import { ConfigModule } from '@nestjs/config';
 import { DangerModule } from './modules/danger/danger.module';
@@ -47,6 +49,7 @@ import { auth } from "./lib/auth"
     AuthExtendedModule,
     ApiKeysModule,
     ArticlesModule,
+    CompaniesModule,
     CompanyModule,
     ClientsModule,
     QuotesModule,
@@ -74,6 +77,10 @@ import { auth } from "./lib/auth"
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
     },
   ],
 })

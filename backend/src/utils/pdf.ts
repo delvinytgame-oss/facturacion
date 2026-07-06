@@ -8,10 +8,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 type PatternType = "payment" | "invoice" | "quote";
 
-export async function formatPattern(type: PatternType, number: number, date: Date = new Date()): Promise<string> {
+export async function formatPattern(type: PatternType, number: number, date: Date = new Date(), companyId: string): Promise<string> {
     const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
     const prisma = new PrismaClient({ adapter });
-    const company = await prisma.company.findFirst();
+    const company = await prisma.company.findUnique({ where: { id: companyId } });
     if (!company) {
         throw new BadRequestException('No company found. Please create a company first.');
     }

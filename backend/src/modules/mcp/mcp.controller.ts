@@ -3,6 +3,7 @@ import { Controller, ForbiddenException, Post, Req, Res } from '@nestjs/common';
 import { ArticlesService } from '@/modules/articles/articles.service';
 import { ClientsService } from '@/modules/clients/clients.service';
 import { InvoicesService } from '@/modules/invoices/invoices.service';
+import { PdfLinksService } from '@/modules/pdf-links/pdf-links.service';
 import { QuotesService } from '@/modules/quotes/quotes.service';
 import { Response } from 'express';
 import { RequestWithUser } from '@/types/request';
@@ -15,6 +16,7 @@ export class McpController {
         private readonly invoicesService: InvoicesService,
         private readonly clientsService: ClientsService,
         private readonly articlesService: ArticlesService,
+        private readonly pdfLinksService: PdfLinksService,
     ) { }
 
     // Raw endpoint: AuthGuard (global) has already resolved companyId/scopes
@@ -35,6 +37,7 @@ export class McpController {
                 invoicesService: this.invoicesService,
                 clientsService: this.clientsService,
                 articlesService: this.articlesService,
+                pdfLinksService: this.pdfLinksService,
             },
         });
 

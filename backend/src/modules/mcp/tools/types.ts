@@ -1,6 +1,7 @@
 import { ArticlesService } from '@/modules/articles/articles.service';
 import { ClientsService } from '@/modules/clients/clients.service';
 import { InvoicesService } from '@/modules/invoices/invoices.service';
+import { PdfLinksService } from '@/modules/pdf-links/pdf-links.service';
 import { QuotesService } from '@/modules/quotes/quotes.service';
 import { ApiKeyScope } from '@/modules/api-keys/scopes';
 import { z } from 'zod';
@@ -16,14 +17,22 @@ export interface ToolContext {
         invoicesService: InvoicesService;
         clientsService: ClientsService;
         articlesService: ArticlesService;
+        pdfLinksService: PdfLinksService;
     };
 }
+
+// One content block per MCP content-block kind a tool handler here actually
+// emits — a (named, reusable) strict subset of the MCP SDK's CallToolResult
+// content union, not the full union.
+export type ToolContentBlock =
+    | { type: 'text'; text: string }
+    | { type: 'resource'; resource: { uri: string; mimeType: string; blob: string } };
 
 export interface ToolResult {
     // Index signature matches the MCP SDK's own (loosely-typed) CallToolResult
     // shape, which registerTool()'s handler callback is expected to return.
     [key: string]: unknown;
-    content: { type: 'text'; text: string }[];
+    content: ToolContentBlock[];
     structuredContent?: Record<string, unknown>;
 }
 

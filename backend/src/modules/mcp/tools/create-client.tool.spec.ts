@@ -11,6 +11,7 @@ describe('createClientTool', () => {
                 quotesService: {} as any,
                 invoicesService: {} as any,
                 articlesService: {} as any,
+                pdfLinksService: {} as any,
             },
         };
     }

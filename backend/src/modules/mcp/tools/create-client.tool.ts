@@ -30,7 +30,10 @@ const outputSchema = {
 
 export const createClientTool: ToolDescriptor<typeof inputSchema> = {
     name: 'create_client',
-    description: 'Create a new client in the active company.',
+    description:
+        'Create a new client in the active company. ' +
+        'Call list_clients first to check whether a client matching the user\'s request already exists — do not create a duplicate. ' +
+        'If list_clients returns an ambiguous or partial match, ask the user to confirm before creating a new record.',
     scope: 'clients:write',
     inputSchema,
     outputSchema,

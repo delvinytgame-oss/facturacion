@@ -20,6 +20,7 @@ import { MailService } from './mail/mail.service';
 import { McpModule } from './modules/mcp/mcp.module';
 import { Module } from '@nestjs/common';
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
+import { PdfLinksModule } from './modules/pdf-links/pdf-links.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QuotesModule } from './modules/quotes/quotes.module';
@@ -71,6 +72,7 @@ import { auth } from "./lib/auth"
     HealthModule,
     PrismaModule,
     LoggerModule,
+    PdfLinksModule,
     McpModule,
   ],
   controllers: [],

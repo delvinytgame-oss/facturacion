@@ -11,6 +11,7 @@ describe('createQuoteTool', () => {
                 invoicesService: {} as any,
                 clientsService: {} as any,
                 articlesService: {} as any,
+                pdfLinksService: {} as any,
                 ...overrides,
             },
         };
@@ -45,6 +46,8 @@ describe('createQuoteTool', () => {
         });
 
         expect(result.structuredContent).toEqual({ id: 'q1', number: 12, rawNumber: 'Q-2026-0012' });
-        expect(result.content[0].text).toContain('Q-2026-0012');
+        const [block] = result.content;
+        expect(block.type).toBe('text');
+        expect((block as { type: 'text'; text: string }).text).toContain('Q-2026-0012');
     });
 });

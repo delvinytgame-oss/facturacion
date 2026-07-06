@@ -1877,12 +1877,14 @@
                 "description": "Generate a new API key",
                 "name": "Name",
                 "namePlaceholder": "e.g. CLI on my laptop",
+                "scopes": "Scopes",
                 "button": "Create API Key"
             },
             "card": {
                 "lastUsed": "Last used: {{date}}",
                 "neverUsed": "Never used",
-                "revoke": "Revoke"
+                "revoke": "Revoke",
+                "noScopes": "No scopes granted"
             }
         }
     },

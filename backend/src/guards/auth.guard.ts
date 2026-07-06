@@ -44,6 +44,9 @@ export class AuthGuard implements CanActivate {
       request.companyId = enrichedSession.activeCompanyId ?? null;
       request.role = enrichedSession.activeRole ?? null;
       request.companies = enrichedSession.companies ?? [];
+      // Session (human) auth isn't scope-restricted — access is governed
+      // by CompanyRole instead. See @/utils/scope-check's hasScope().
+      request.scopes = null;
       return true;
     }
 
@@ -67,6 +70,9 @@ export class AuthGuard implements CanActivate {
         // management via API key, but full business-data + settings access).
         request.role = CompanyRole.ADMIN;
         request.companies = [];
+        // Restricts API-key callers (e.g. the MCP module) to exactly these
+        // scopes regardless of the synthetic ADMIN role above.
+        request.scopes = apiKey.scopes;
         return true;
       }
     }

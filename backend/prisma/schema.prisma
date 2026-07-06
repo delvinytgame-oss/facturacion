@@ -356,6 +356,7 @@ model Company {
   apiKeys          ApiKey[]
   invitationCodes  InvitationCode[]
   Expense          Expense[]
+  pdfDownloadTokens PdfDownloadToken[]
 }
 
 // Join table linking users to the companies they belong to, with a role
@@ -628,6 +629,27 @@ model Signature {
   otpUsed   Boolean   @default(false)
   quote     Quote     @relation(fields: [quoteId], references: [id])
   isActive  Boolean   @default(true)
+}
+
+enum PdfDocumentType {
+  QUOTE
+  INVOICE
+}
+
+// Short-lived, unauthenticated download link for a quote/invoice PDF — minted
+// by the MCP PDF tools so a chat client (e.g. OpenWebUI) that can't render an
+// embedded MCP resource block can still offer the user a clickable URL.
+model PdfDownloadToken {
+  id           String          @id @default(cuid())
+  tokenHash    String          @unique
+  documentType PdfDocumentType
+  documentId   String
+  companyId    String
+  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  createdAt    DateTime        @default(now())
+
+  @@index([documentId])
 }
 
 // Currency conversion model
@@ -941,6 +963,7 @@ model ApiKey {
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   companyId  String
   company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  scopes     String[]  @default([])
   lastUsedAt DateTime?
   createdAt  DateTime  @default(now())
 

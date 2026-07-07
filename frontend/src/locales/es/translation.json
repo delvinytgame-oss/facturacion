@@ -1583,6 +1583,8 @@
             "invoices": "Facturas",
             "payments": "Pagos",
             "clients": "Clientes",
+            "inventory": "Inventario",
+            "ncf": "Autorizaciones NCF",
             "paymentMethods": "Métodos de pago",
             "stats": "Estadísticas",
             "settings": "Configuración"
@@ -1946,5 +1948,226 @@
         "selectThisFolder": "Seleccionar esta carpeta",
         "noSubdirectories": "No se encontraron subcarpetas",
         "loading": "Cargando directorios..."
+    },
+    "inventory": {
+        "title": "Inventario",
+        "description": "Administra los niveles de stock de tu inventario.",
+        "empty": "Aún no hay artículos en el inventario",
+        "actions": {
+            "cancel": "Cancelar",
+            "add": "Agregar",
+            "save": "Guardar cambios",
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "deleting": "Eliminando...",
+            "export": "Exportar CSV",
+            "movements": "Movimientos",
+            "adjustStock": "Ajustar stock",
+            "crmImport": "Importar del CRM"
+        },
+        "search": {
+            "placeholder": "Buscar en inventario..."
+        },
+        "list": {
+            "add": "Agregar artículo"
+        },
+        "stock": {
+            "inStock": "En stock",
+            "lowStock": "Stock bajo",
+            "outOfStock": "Sin stock",
+            "lowStockAlert": "{{count}} artículo(s) por debajo del nivel mínimo"
+        },
+        "filters": {
+            "allCategories": "Todas las categorías",
+            "allLocations": "Todas las ubicaciones",
+            "allStatus": "Todos los estados",
+            "inStock": "En stock",
+            "lowStock": "Stock bajo",
+            "outOfStock": "Sin stock"
+        },
+        "table": {
+            "columns": {
+                "name": "Nombre",
+                "sku": "SKU",
+                "category": "Categoría",
+                "quantity": "Cant.",
+                "minQuantity": "Mín.",
+                "status": "Estado",
+                "unitPrice": "Precio",
+                "costPrice": "Costo",
+                "location": "Ubicación",
+                "actions": "Acciones"
+            },
+            "emptyState": "No se encontraron artículos"
+        },
+        "fields": {
+            "name": {
+                "label": "Nombre",
+                "placeholder": "ej. Widget A"
+            },
+            "description": {
+                "label": "Descripción",
+                "placeholder": "Descripción del artículo"
+            },
+            "sku": {
+                "label": "SKU",
+                "placeholder": "ej. WDG-001"
+            },
+            "category": {
+                "label": "Categoría",
+                "placeholder": "ej. Electrónica"
+            },
+            "quantity": {
+                "label": "Cantidad"
+            },
+            "minQuantity": {
+                "label": "Cantidad mín."
+            },
+            "unitPrice": {
+                "label": "Precio unitario"
+            },
+            "costPrice": {
+                "label": "Costo"
+            },
+            "location": {
+                "label": "Ubicación",
+                "placeholder": "ej. Almacén A"
+            }
+        },
+        "upsert": {
+            "title": {
+                "create": "Agregar artículo al inventario",
+                "edit": "Editar artículo del inventario"
+            },
+            "messages": {
+                "addSuccess": "Artículo agregado",
+                "addError": "Error al agregar artículo",
+                "updateSuccess": "Artículo actualizado",
+                "updateError": "Error al actualizar artículo",
+                "deleteSuccess": "Artículo eliminado",
+                "deleteError": "Error al eliminar artículo"
+            }
+        },
+        "delete": {
+            "description": "¿Estás seguro de que deseas eliminar \"{{name}}\"? Esta acción no se puede deshacer."
+        },
+        "movements": {
+            "title": "Movimientos de stock",
+            "subtitle": "{{name}} (SKU: {{sku}})",
+            "empty": "No hay movimientos registrados",
+            "add": "Nuevo movimiento",
+            "columns": {
+                "date": "Fecha",
+                "type": "Tipo",
+                "quantity": "Cant.",
+                "previousQty": "Antes",
+                "newQty": "Después",
+                "reason": "Motivo"
+            },
+            "types": {
+                "IN": "Entrada",
+                "OUT": "Salida",
+                "ADJUSTMENT": "Ajuste",
+                "SALE": "Venta",
+                "RETURN": "Devolución"
+            },
+            "form": {
+                "type": "Tipo de movimiento",
+                "quantity": "Cantidad",
+                "reason": "Motivo (opcional)",
+                "reasonPlaceholder": "ej. Orden de compra #123",
+                "submit": "Registrar movimiento",
+                "messages": {
+                    "success": "Movimiento registrado",
+                    "error": "Error al registrar movimiento"
+             }
+        },
+        "crmImport": {
+            "title": "Importar Productos del CRM",
+            "selectAccount": "Seleccionar cuenta del CRM",
+            "selectAccountFirst": "Selecciona una cuenta del CRM para ver productos",
+            "searchProducts": "Buscar productos...",
+            "noProducts": "No se encontraron productos",
+            "selected": "seleccionados",
+            "selectAll": "Seleccionar Todos",
+            "deselectAll": "Deseleccionar Todos",
+            "import": "Importar",
+            "columns": {
+                "name": "Nombre",
+                "sku": "SKU",
+                "category": "Categoría",
+                "stock": "Stock",
+                "price": "Precio",
+                "status": "Estado"
+            }
+        }
+    },
+    "ncf": {
+        "title": "Autorizaciones NCF",
+        "description": "Gestiona tus autorizaciones de NCF (Número de Comprobante Fiscal) de la DGII.",
+        "empty": "No hay autorizaciones NCF configuradas",
+        "actions": {
+            "add": "Agregar Autorización",
+            "edit": "Editar",
+            "deactivate": "Desactivar",
+            "cancel": "Cancelar",
+            "save": "Guardar"
+        },
+        "fields": {
+            "ncfType": "Tipo de Documento",
+            "series": "Serie",
+            "sequenceFrom": "Desde",
+            "sequenceTo": "Hasta",
+            "currentSequence": "Actual",
+            "remaining": "Restantes",
+            "expiresAt": "Vence",
+            "status": "Estado"
+        },
+        "status": {
+            "active": "Activa",
+            "inactive": "Inactiva",
+            "expired": "Vencida",
+            "exhausted": "Agotada"
+        },
+        "upsert": {
+            "title": {
+                "create": "Agregar Autorización NCF",
+                "edit": "Editar Autorización NCF"
+            },
+            "messages": {
+                "createSuccess": "Autorización NCF creada",
+                "createError": "Error al crear autorización NCF",
+                "updateSuccess": "Autorización NCF actualizada",
+                "updateError": "Error al actualizar autorización NCF"
+            }
+        },
+        "types": {
+            "01": "Factura Fiscal",
+            "02": "Nota de Débito",
+            "03": "Nota de Crédito",
+            "04": "Factura Consumidor Final",
+            "11": "Comprobante para Exportación",
+            "12": "Factura para Regímenes Especiales",
+            "13": "Nota de Crédito para Exportación",
+            "14": "Comprobante de Compras",
+            "15": "Régimen Especial de Leyes Especiales",
+            "16": "Gubernamental"
+        }
+    },
+    "notes": {
+        "title": "Notas de Crédito/Débito",
+        "create": "Crear Nota",
+        "selectType": "Tipo de Nota",
+        "credit": "Nota de Crédito",
+        "debit": "Nota de Débito",
+        "originalInvoice": "Factura Original",
+        "reason": "Motivo",
+        "reasonPlaceholder": "ej. Devolución de producto, ajuste de precio",
+        "items": "Artículos de la Nota",
+        "messages": {
+            "createSuccess": "Nota creada exitosamente",
+            "createError": "Error al crear nota"
+        }
     }
+}
 }

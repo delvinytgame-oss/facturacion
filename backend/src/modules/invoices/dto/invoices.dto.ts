@@ -20,6 +20,7 @@ export class CreateInvoiceDto {
         type: ItemType;
         order: number;
         quoteItemId?: string;
+        crmProductId?: string;
     }[];
 }
 

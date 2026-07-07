@@ -131,7 +131,7 @@ export default function SignupPage() {
             // better-auth >=1.6 requires `name` on email sign-up; derive it from the
             // first/last name (the backend create hook recomputes the same value).
             name: `${data.firstname} ${data.lastname}`.trim(),
-            // @ts-ignore additional fields
+            // @ts-expect-error additional fields
             firstname: data.firstname,
             lastname: data.lastname,
         });

@@ -13,5 +13,11 @@ export default function Home() {
         return <Navigate to="/auth/sign-in" replace />;
     }
 
+    // Check if system is unlocked
+    const isUnlocked = localStorage.getItem("system_unlocked") === "true";
+    if (!isUnlocked) {
+        return <Navigate to="/auth/unlock" replace />;
+    }
+
     return <Navigate to="/dashboard" replace />;
 }

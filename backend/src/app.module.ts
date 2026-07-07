@@ -9,16 +9,20 @@ import { ClientsModule } from './modules/clients/clients.module';
 import { CompaniesModule } from './modules/companies/companies.module';
 import { CompanyModule } from './modules/company/company.module';
 import { ConfigModule } from '@nestjs/config';
+import { CrmSyncModule } from './modules/crm-sync/crm-sync.module';
 import { DangerModule } from './modules/danger/danger.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { DirectoryModule } from './modules/directory/directory.module';
 import { ExpensesModule } from './modules/expenses/expenses.module';
 import { HealthModule } from './modules/health/health.module';
+import { InventoryModule } from './modules/inventory/inventory.module';
 import { InvitationsModule } from './modules/invitations/invitations.module';
 import { InvoicesModule } from './modules/invoices/invoices.module';
 import { MailService } from './mail/mail.service';
 import { McpModule } from './modules/mcp/mcp.module';
 import { Module } from '@nestjs/common';
+import { NcfModule } from './modules/ncf/ncf.module';
+import { NotesModule } from './modules/notes/notes.module';
 import { PaymentMethodsModule } from './modules/payment-methods/payment-methods.module';
 import { PdfLinksModule } from './modules/pdf-links/pdf-links.module';
 import { PluginsModule } from './modules/plugins/plugins.module';
@@ -30,6 +34,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { SignaturesModule } from './modules/signatures/signatures.module';
 import { SireneModule } from './modules/sirene/sirene.module';
 import { StatsModule } from './modules/stats/stats.module'
+import { StockMovementsModule } from './modules/stock-movements/stock-movements.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { LoggerModule } from './modules/logger/logger.module';
 import { auth } from "./lib/auth"
@@ -54,6 +59,7 @@ import { auth } from "./lib/auth"
     CompaniesModule,
     CompanyModule,
     ClientsModule,
+    CrmSyncModule,
     QuotesModule,
     InvoicesModule,
     PaymentsModule,
@@ -66,6 +72,10 @@ import { auth } from "./lib/auth"
     RecurringInvoicesModule,
     PaymentMethodsModule,
     ExpensesModule,
+    InventoryModule,
+    StockMovementsModule,
+    NcfModule,
+    NotesModule,
     StatsModule,
     WebhooksModule,
     InvitationsModule,

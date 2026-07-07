@@ -8,6 +8,7 @@ import { getInvertColor, getPDF } from '@/utils/pdf';
 import { MailService } from '@/mail/mail.service';
 import { WebhookDispatcherService } from '../webhooks/webhook-dispatcher.service';
 import { WebhookEvent } from '../../../prisma/generated/prisma/client';
+import { getCrmSupabaseClient } from '@/lib/crm-supabase';
 import { baseTemplate } from '@/modules/invoices/templates/base.template';
 import { business } from '@tsclass/tsclass/dist_ts';
 import { finance } from '@fin.cx/einvoice/dist_ts/plugins';
@@ -18,6 +19,14 @@ import { parseAddress } from '@/utils/adress';
 import prisma from '@/prisma/prisma.service';
 import { calculateDiscountedTotals, clampDiscountRate } from '@/utils/financial';
 import { getDraftWatermarkLabel } from '@/utils/watermark';
+
+function getVatExemptText(exemptVat: boolean | null | undefined, country: string | null | undefined): string | null {
+    if (!exemptVat) return null;
+    const c = (country || '').toUpperCase();
+    if (c === 'FRANCE') return 'TVA non applicable, art. 293 B du CGI';
+    if (c === 'DOMINICAN REPUBLIC' || c === 'REPÚBLICA DOMINICANA' || c === 'REPUBLICA DOMINICANA') return 'Exento de ITBIS conforme a la normativa vigente';
+    return null;
+}
 
 @Injectable()
 export class InvoicesService {
@@ -160,9 +169,9 @@ export class InvoicesService {
             throw new BadRequestException('Client not found');
         }
 
-        const isVatExemptFrance = !!(company.exemptVat && (company.country || '').toUpperCase() === 'FRANCE');
+        const isVatExempt = !!company.exemptVat;
         const discountRate = clampDiscountRate(body.discountRate);
-        const totals = calculateDiscountedTotals(items, discountRate, { isVatExempt: isVatExemptFrance });
+        const totals = calculateDiscountedTotals(items, discountRate, { isVatExempt });
 
         const invoice = await prisma.invoice.create({
             data: {
@@ -184,10 +193,11 @@ export class InvoicesService {
                         description: item.description,
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
-                        vatRate: isVatExemptFrance ? 0 : (item.vatRate || 0),
+                        vatRate: isVatExempt ? 0 : (item.vatRate || 0),
                         type: item.type,
                         order: item.order || 0,
                         quoteItemId: item.quoteItemId,
+                        crmProductId: item.crmProductId || null,
                     })),
                 },
                 dueDate: data.dueDate ? new Date(data.dueDate) : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
@@ -210,6 +220,11 @@ export class InvoicesService {
         } catch (error) {
             logger.error('Failed to dispatch INVOICE_CREATED webhook', { category: 'invoice', details: { error } });
         }
+
+        // Deduct stock in CRM for items with crmProductId
+        this.deductCrmStock(invoice.items).catch(err => {
+            logger.error('Failed to deduct CRM stock', { category: 'invoice', details: { error: err.message } });
+        });
 
         return invoice;
     }
@@ -252,9 +267,9 @@ export class InvoicesService {
 
         const itemIdsToDelete = existingItemIds.filter(id => !incomingItemIds.includes(id));
 
-        const isVatExemptFrance = !!(company.exemptVat && (company.country || '').toUpperCase() === 'FRANCE');
+        const isVatExempt = !!company.exemptVat;
         const normalizedDiscountRate = clampDiscountRate(discountRate ?? existingInvoice.discountRate);
-        const totals = calculateDiscountedTotals(items, normalizedDiscountRate, { isVatExempt: isVatExemptFrance });
+        const totals = calculateDiscountedTotals(items, normalizedDiscountRate, { isVatExempt });
 
         const updateInvoice = await prisma.invoice.update({
             where: { id },
@@ -285,7 +300,7 @@ export class InvoicesService {
                                 description: i.description,
                                 quantity: i.quantity,
                                 unitPrice: i.unitPrice,
-                                vatRate: isVatExemptFrance ? 0 : (i.vatRate || 0),
+                                vatRate: isVatExempt ? 0 : (i.vatRate || 0),
                                 type: i.type,
                                 order: i.order || 0,
                             },
@@ -297,7 +312,7 @@ export class InvoicesService {
                             description: i.description,
                             quantity: i.quantity,
                             unitPrice: i.unitPrice,
-                            vatRate: isVatExemptFrance ? 0 : (i.vatRate || 0),
+                            vatRate: isVatExempt ? 0 : (i.vatRate || 0),
                             type: i.type,
                             order: i.order || 0,
                         })),
@@ -457,7 +472,7 @@ export class InvoicesService {
             discountAmount: discountAmountValue.toFixed(2),
             discountRate: Number(normalizedDiscountRate.toFixed(2)),
             hasDiscount,
-            vatExemptText: invoice.company.exemptVat && (invoice.company.country || '').toUpperCase() === 'FRANCE' ? 'TVA non applicable, art. 293 B du CGI' : null,
+            vatExemptText: getVatExemptText(invoice.company.exemptVat, invoice.company.country),
 
             paymentMethod: paymentMethodName,
             paymentDetails: paymentMethodDetails,
@@ -912,5 +927,64 @@ export class InvoicesService {
         }
 
         return { message: 'Invoice sent successfully' };
+    }
+
+    private async deductCrmStock(items: { crmProductId?: string | null; quantity: number }[]) {
+        const crm = getCrmSupabaseClient();
+        if (!crm) return;
+
+        const itemsToDeduct = items.filter(i => i.crmProductId);
+        if (itemsToDeduct.length === 0) return;
+
+        for (const item of itemsToDeduct) {
+            try {
+                const { data: product, error: fetchError } = await crm
+                    .from('products')
+                    .select('id, stock')
+                    .eq('id', item.crmProductId)
+                    .single();
+
+                if (fetchError || !product) {
+                    logger.warn('CRM product not found for stock deduction', {
+                        category: 'invoice',
+                        details: { crmProductId: item.crmProductId },
+                    });
+                    continue;
+                }
+
+                const newStock = Math.max(0, product.stock - item.quantity);
+
+                const { error: updateError } = await crm
+                    .from('products')
+                    .update({
+                        stock: newStock,
+                        status: newStock === 0 ? 'out_of_stock' : 'active',
+                        updated_at: new Date().toISOString(),
+                    })
+                    .eq('id', item.crmProductId);
+
+                if (updateError) {
+                    logger.error('CRM stock deduction failed', {
+                        category: 'invoice',
+                        details: { crmProductId: item.crmProductId, error: updateError.message },
+                    });
+                } else {
+                    logger.info('CRM stock deducted', {
+                        category: 'invoice',
+                        details: {
+                            crmProductId: item.crmProductId,
+                            oldStock: product.stock,
+                            newStock,
+                            deducted: item.quantity,
+                        },
+                    });
+                }
+            } catch (err) {
+                logger.error('CRM stock deduction error', {
+                    category: 'invoice',
+                    details: { crmProductId: item.crmProductId, error: (err as Error).message },
+                });
+            }
+        }
     }
 }

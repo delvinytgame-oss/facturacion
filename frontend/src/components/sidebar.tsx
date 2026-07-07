@@ -2,6 +2,7 @@ import {
     Building2,
     Check,
     ChevronsUpDown,
+    ClipboardList,
     CreditCard,
     FileText,
     LayoutDashboard,
@@ -17,6 +18,7 @@ import {
     User,
     Users,
     Wallet,
+    Warehouse,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { DropdownMenuGroup, DropdownMenuLabel, DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu"
@@ -139,6 +141,18 @@ export function Sidebar() {
             icon: <Package className="w-4 h-4" />,
             url: "/articles",
             dataCy: "sidebar-articles-link",
+        },
+        {
+            title: t("sidebar.navigation.inventory"),
+            icon: <Warehouse className="w-4 h-4" />,
+            url: "/inventory",
+            dataCy: "sidebar-inventory-link",
+        },
+        {
+            title: t("sidebar.navigation.ncf"),
+            icon: <ClipboardList className="w-4 h-4" />,
+            url: "/ncf",
+            dataCy: "sidebar-ncf-link",
         },
         {
             title: t("sidebar.navigation.paymentMethods"),
@@ -316,7 +330,7 @@ export function Sidebar() {
                                     ) : (
                                         <div className="grid flex-1 text-left text-sm leading-tight">
                                             <span className="truncate font-medium">
-                                                {/* @ts-ignore */}
+                                                {/* @ts-expect-error additionalFields not in session type */}
                                                 {data?.user?.lastname} {data?.user?.firstname}
                                             </span>
                                             <span className="truncate text-xs">{data?.user?.email}</span>
@@ -335,7 +349,7 @@ export function Sidebar() {
                                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                         <div className="grid flex-1 text-left text-sm leading-tight">
                                             <span className="truncate font-medium">
-                                                {/* @ts-ignore */}
+                                                {/* @ts-expect-error additionalFields not in session type */}
                                                 {data?.user?.lastname} {data?.user?.firstname}
                                             </span>
                                             <span className="truncate text-xs">{data?.user?.email}</span>

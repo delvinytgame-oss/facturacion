@@ -15,7 +15,7 @@ async function loadRuntimeConfig() {
             ; (window as any).__APP_CONFIG__ = await res.json()
             return
         }
-    } catch (e) {
+    } catch {
         // ignore, fallback to empty config
     }
     ; (window as any).__APP_CONFIG__ = {}

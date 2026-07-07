@@ -230,15 +230,15 @@ function generateDefaultValues(fields: FormFieldItem[], currentValues?: Record<s
 }
 
 export function DynamicFormModal({ open, title, description, config, currentValues, onCancel, onSubmit }: DynamicFormModalProps) {
-    if (!config || JSON.stringify(config) === "{}") return null
-
-    const schema = generateZodSchema(config.form.fields)
-    const defaultValues = generateDefaultValues(config.form.fields, currentValues)
+    const schema = config && JSON.stringify(config) !== "{}" ? generateZodSchema(config.form.fields) : null
+    const defaultValues = config && JSON.stringify(config) !== "{}" ? generateDefaultValues(config.form.fields, currentValues) : {}
 
     const form = useForm({
-        resolver: zodResolver(schema),
+        resolver: schema ? zodResolver(schema) : undefined,
         defaultValues,
     })
+
+    if (!config || JSON.stringify(config) === "{}") return null
 
     const handleSubmit = (data: Record<string, any>) => {
         onSubmit(data)

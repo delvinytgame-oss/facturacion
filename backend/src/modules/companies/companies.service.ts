@@ -1,4 +1,4 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 
 import { CompanyRole } from '../../../prisma/generated/prisma/client';
 import { CompanyService } from '@/modules/company/company.service';
@@ -8,7 +8,12 @@ import prisma from '@/prisma/prisma.service';
 
 @Injectable()
 export class CompaniesService {
-  constructor(private readonly companyService: CompanyService) { }
+  constructor(
+    @Inject(forwardRef(() => CompanyService))
+    private readonly companyService: CompanyService,
+  ) {
+    console.log('DEBUG: CompaniesService constructor. companyService injected:', companyService);
+  }
 
   async createCompany(userId: string, dto: EditCompanyDto) {
     return this.companyService.createCompany(userId, dto);

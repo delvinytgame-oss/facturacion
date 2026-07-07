@@ -57,7 +57,9 @@ export class DocumensoProvider implements ISigningProvider {
     }
 
     static async getClient(): Promise<Documenso> {
-        let { baseUrl, apiKey } = await getProviderConfig<SigningPluginConfig>("documenso");
+        const config = await getProviderConfig<SigningPluginConfig>("documenso");
+        let baseUrl = config.baseUrl;
+        const { apiKey } = config;
 
         baseUrl = DocumensoProvider.formatServerUrl(baseUrl);
 

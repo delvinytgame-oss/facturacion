@@ -9,11 +9,14 @@ export type Path =
   | `/auth/sign-in`
   | `/auth/sign-out`
   | `/auth/sign-up`
+  | `/auth/unlock`
   | `/clients`
   | `/dashboard`
   | `/expenses`
+  | `/inventory`
   | `/invoices`
   | `/invoices/pdf/:id`
+  | `/ncf`
   | `/payment-methods`
   | `/payments`
   | `/payments/pdf/:id`

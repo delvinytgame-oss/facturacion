@@ -45,6 +45,7 @@ export interface InvoiceItem {
     type: InvoiceItemType;
     order: number;
     quoteItemId?: string; // Link to the originating QuoteItem when created from a quote
+    crmProductId?: string; // Link to CRM product for stock sync
 }
 
 export interface Invoice {
@@ -74,6 +75,13 @@ export interface Invoice {
     currency: string; // Currency code, e.g., "EUR", "USD"
     isActive: boolean;
     payments?: { id: string; totalPaid: number }[];
+    ncf?: string | null;
+    ncfType?: string | null;
+    noteType?: 'CREDIT' | 'DEBIT' | null;
+    originalInvoiceId?: string | null;
+    originalInvoice?: { id: string; rawNumber?: string; number: number } | null;
+    creditDebitNotes?: Invoice[];
+    itbisRetained?: number;
 }
 
 export enum RecurrenceFrequency {

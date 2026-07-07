@@ -41,8 +41,10 @@ export default function LoginPage() {
 
         if (result.data?.user.createdAt) {
             toast.success(t("auth.login.messages.loginSuccess"))
+            // Clear unlock status on new login
+            localStorage.removeItem("system_unlocked");
             // Force a full page reload to refresh the session state
-            window.location.href = "/dashboard";
+            window.location.href = "/auth/unlock";
             return;
         }
 

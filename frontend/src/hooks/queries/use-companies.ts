@@ -13,7 +13,6 @@ interface SessionWithCompanies {
 // extra request needed.
 export function useCompanies() {
     const session = authClient.useSession()
-    // @ts-ignore — additionalFields aren't reflected in the client's session type
     const data = session.data as SessionWithCompanies | null | undefined
 
     return {

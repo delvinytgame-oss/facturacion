@@ -35,6 +35,13 @@ export const queryKeys = {
     articles: {
         list: () => ["articles", "list"] as const,
     },
+    inventory: {
+        list: () => ["inventory", "list"] as const,
+        lowStock: () => ["inventory", "low-stock"] as const,
+        categories: () => ["inventory", "categories"] as const,
+        locations: () => ["inventory", "locations"] as const,
+        movements: (itemId: string) => ["inventory", "movements", itemId] as const,
+    },
     expenses: {
         list: () => ["expenses", "list"] as const,
     },
@@ -43,5 +50,18 @@ export const queryKeys = {
     },
     company: {
         info: () => ["company", "info"] as const,
+    },
+    ncf: {
+        list: () => ["ncf", "list"] as const,
+        types: () => ["ncf", "types"] as const,
+        remaining: (ncfType: string) => ["ncf", "remaining", ncfType] as const,
+    },
+    notes: {
+        list: () => ["notes", "list"] as const,
+        forInvoice: (invoiceId: string) => ["notes", "invoice", invoiceId] as const,
+    },
+    crm: {
+        accounts: () => ["crm", "accounts"] as const,
+        products: (accountId: string) => ["crm", "products", accountId] as const,
     },
 } as const

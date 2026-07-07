@@ -3,11 +3,15 @@ services:
     image: ghcr.io/invoicerr-app/invoicerr:latest
     ports:
       - "80:80"
+    volumes:
+      - ./entrypoint.sh:/usr/share/nginx/entrypoint.sh:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend/dist:/usr/share/nginx/html:ro
     environment:
-      - DATABASE_URL=postgresql://invoicerr:invoicerr@invoicerr_db:5432/invoicerr_db
+      - DATABASE_URL=postgresql://postgres.oavcsuzmamwcxifzfsxx:2125%40YTx123%40MOM-deibin-2007-21-07%402125DELVINYT2125%40@aws-1-us-west-2.pooler.supabase.com:5432/postgres
 
-      - APP_URL=https://invoicerr.example.com # Required for email templates, as it redirects to the app
-      - CORS_ORIGINS=http://localhost:5173,https://invoicerr.example.com # Comma-separated list of allowed origins for CORS
+      - APP_URL=http://localhost # Required for email templates, as it redirects to the app
+      - CORS_ORIGINS=http://localhost,http://localhost:5173,https://invoicerr.example.com # Comma-separated list of allowed origins for CORS
 
       # Required for email features - choose ONE provider below
       # Option 1: SMTP (default, MAIL_PROVIDER can be omitted)
@@ -24,34 +28,6 @@ services:
       # - BREVO_API_KEY="your_brevo_api_key"
       # - MAIL_FROM="user-from@example.com" # Sender address, falls back to SMTP_FROM/SMTP_USER if unset
 
-      # OIDC Configuration (example for Authentik)
-      - OIDC_ISSUER="https://auth.chevrier.dev"
-      - OIDC_NAME="Pocket ID"
-      # Endpoints for OIDC
-      - OIDC_AUTHORIZATION_ENDPOINT="https://auth.chevrier.dev/authorize"
-      - OIDC_TOKEN_ENDPOINT="https://auth.chevrier.dev/token"
-      - OIDC_USERINFO_ENDPOINT="https://auth.chevrier.dev/userinfo"
-      - OIDC_TOKEN_REVOKE_ENDPOINT="https://auth.chevrier.dev/revoke"
-      - OIDC_END_SESSION_ENDPOINT="https://auth.chevrier.dev/end_session"
-      - OIDC_JWKS_URI="https://auth.chevrier.dev/.well-known/jwks.json"
-      # Client ID and Secret for OIDC
-      - OIDC_CLIENT_ID="your-client-id"
-      - OIDC_CLIENT_SECRET="your-client-secret"
-
       # Optional, but recommended for docker deployments
       - JWT_SECRET="your_jwt_secret" # Used for JWT authentication, can be any random string
-    depends_on:
-      - invoicerr_db
-
-  invoicerr_db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: invoicerr
-      POSTGRES_PASSWORD: invoicerr
-      POSTGRES_DB: invoicerr_db
-    volumes:
-      - db_data:/var/lib/postgresql/data
-
-volumes:
-  db_data:
-    driver: local
+      - BETTER_AUTH_SECRET="a_very_secure_random_string_123" # Required for better-auth

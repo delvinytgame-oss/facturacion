@@ -81,7 +81,7 @@ export default function AccountSettings() {
     const handleProfileUpdate = async (values: z.infer<typeof profileSchema>) => {
         setUpdateUserLoading(true);
         authClient.updateUser({
-            // @ts-ignore additional fields
+            // @ts-expect-error additional fields
             firstname: values.firstname,
             lastname: values.lastname,
             email: values.email,

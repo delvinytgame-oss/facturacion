@@ -1,14 +1,678 @@
-datasource db {
-  provider = "postgres"
-}
-
 generator client {
   provider     = "prisma-client"
   output       = "./generated/prisma"
   moduleFormat = "cjs"
 }
 
-// Currency enum
+datasource db {
+  provider = "postgres"
+}
+
+model PDFConfig {
+  id                        String   @id @default(cuid())
+  fontFamily                String   @default("Arial")
+  padding                   Int      @default(40)
+  primaryColor              String   @default("#2563eb")
+  secondaryColor            String   @default("#64748b")
+  includeLogo               Boolean  @default(false)
+  logoB64                   String?
+  invoice                   String   @default("Invoice")
+  quote                     String   @default("Quote")
+  description               String   @default("Description:")
+  date                      String   @default("Date:")
+  dueDate                   String   @default("Due date:")
+  validUntil                String   @default("Valid until:")
+  paymentDate               String   @default("Payment date:")
+  billTo                    String   @default("Bill to:")
+  quoteFor                  String   @default("Quote for:")
+  receivedFrom              String   @default("Received from:")
+  invoiceRefer              String   @default("Invoice reference:")
+  quantity                  String   @default("Qty")
+  vatRate                   String   @default("VAT (%)")
+  unitPrice                 String   @default("Unit price")
+  subtotal                  String   @default("Subtotal:")
+  total                     String   @default("Total:")
+  vat                       String   @default("VAT:")
+  grandTotal                String   @default("Grand total:")
+  totalReceived             String   @default("Total received:")
+  notes                     String   @default("Notes:")
+  paymentMethod             String   @default("Payment Method:")
+  paymentDetails            String   @default("Payment Details:")
+  VATId                     String   @default("VAT")
+  legalId                   String   @default("Legal ID")
+  day                       String   @default("Day")
+  deposit                   String   @default("Deposit")
+  hour                      String   @default("Hour")
+  paymentMethodBankTransfer String   @default("Bank transfer")
+  paymentMethodCash         String   @default("Cash")
+  paymentMethodCheck        String   @default("Check")
+  paymentMethodOther        String   @default("Other")
+  paymentMethodPayPal       String   @default("PayPal")
+  product                   String   @default("Product")
+  service                   String   @default("Service")
+  type                      String   @default("Type")
+  discount                  String   @default("Discount:")
+  payment                   String   @default("Payment")
+  Company                   Company?
+}
+
+model Company {
+  id                    String             @id @default(cuid())
+  name                  String
+  description           String?
+  currency              Currency           @default(EUR)
+  legalId               String?
+  foundedAt             DateTime
+  VAT                   String?
+  address               String
+  postalCode            String
+  city                  String
+  country               String
+  phone                 String
+  email                 String
+  quoteStartingNumber   Int                @default(1)
+  quoteNumberFormat     String             @default("Q-{year}-{number:4}")
+  invoiceStartingNumber Int                @default(1)
+  invoiceNumberFormat   String             @default("INV-{year}-{number:4}")
+  invoicePDFFormat      String             @default("facturx")
+  dateFormat            String             @default("dd/MM/yyyy")
+  pDFConfigId           String             @unique
+  exemptVat             Boolean            @default(false)
+  addressLine2          String?
+  state                 String?
+  paymentNumberFormat   String             @default("PAY-{year}-{number:4}")
+  paymentStartingNumber Int                @default(1)
+  createdAt             DateTime           @default(now())
+  Article               Article[]
+  Client                Client[]
+  pdfConfig             PDFConfig          @relation(fields: [pDFConfigId], references: [id])
+  Expense               Expense[]
+  InventoryItem         InventoryItem[]
+  stockMovements        StockMovement[]
+  Invoice               Invoice[]
+  emailTemplates        MailTemplate[]
+  PaymentMethod         PaymentMethod[]
+  pdfDownloadTokens     PdfDownloadToken[]
+  Quote                 Quote[]
+  RecurringInvoice      RecurringInvoice[]
+  webhooks              Webhook[]
+  apiKeys               ApiKey[]
+  invitationCodes       InvitationCode[]
+  members               UserCompany[]
+  ncfAuthorizations     NcfAuthorization[]
+  eCfLogs               ECfLog[]
+  dgiiReports606        DgiiReport606[]
+  dgiiReports607        DgiiReport607[]
+}
+
+model UserCompany {
+  id        String      @id @default(cuid())
+  userId    String
+  companyId String
+  role      CompanyRole @default(MEMBER)
+  createdAt DateTime    @default(now())
+  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+  @@map("user_company")
+}
+
+model Client {
+  id               String             @id @default(cuid())
+  name             String
+  description      String?
+  legalId          String?
+  VAT              String?
+  foundedAt        DateTime?
+  contactFirstname String?
+  contactLastname  String?
+  contactEmail     String?
+  contactPhone     String?
+  address          String
+  postalCode       String
+  city             String
+  country          String
+  currency         Currency?
+  isActive         Boolean            @default(true)
+  type             ClientType         @default(COMPANY)
+  salutation       String             @default("Mr")
+  sex              String             @default("other")
+  title            String             @default("Doctor")
+  addressLine2     String?
+  state            String?
+  companyId        String
+  company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  Invoice          Invoice[]
+  Quote            Quote[]
+  RecurringInvoice RecurringInvoice[]
+
+  @@index([companyId])
+}
+
+model MailTemplate {
+  id        String           @id @default(cuid())
+  type      MailTemplateType
+  subject   String
+  body      String
+  companyId String
+  company   Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, type])
+}
+
+model Quote {
+  id              String      @id @default(uuid())
+  number          Int         @default(autoincrement())
+  rawNumber       String?
+  title           String?
+  clientId        String
+  companyId       String
+  status          QuoteStatus @default(DRAFT)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  validUntil      DateTime?
+  signedAt        DateTime?
+  viewedAt        DateTime?
+  signedBy        String?
+  totalHT         Float
+  totalVAT        Float
+  totalTTC        Float
+  currency        Currency
+  paymentMethod   String?
+  paymentDetails  String?
+  notes           String?     @default("")
+  isActive        Boolean     @default(true)
+  paymentMethodId String?
+  discountRate    Float       @default(0)
+  Invoice         Invoice[]
+  client          Client      @relation(fields: [clientId], references: [id])
+  company         Company     @relation(fields: [companyId], references: [id])
+  items           QuoteItem[]
+  signatures      Signature[]
+}
+
+model QuoteItem {
+  id           String        @id @default(uuid())
+  quoteId      String
+  description  String?
+  quantity     Float
+  unitPrice    Float
+  vatRate      Float
+  order        Int
+  type         ItemType      @default(SERVICE)
+  name         String
+  invoiceItems InvoiceItem[]
+  quote        Quote         @relation(fields: [quoteId], references: [id])
+}
+
+model Invoice {
+  id                 String            @id @default(uuid())
+  number             Int               @default(autoincrement())
+  rawNumber          String?
+  quoteId            String?
+  recurringInvoiceId String?
+  clientId           String
+  companyId          String
+  status             InvoiceStatus     @default(DRAFT)
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+  dueDate            DateTime
+  paidAt             DateTime?
+  paymentMethod      String?
+  paymentDetails     String?
+  notes              String?           @default("")
+  totalHT            Float
+  totalVAT           Float
+  totalTTC           Float
+  currency           Currency
+  isActive           Boolean           @default(true)
+  paymentMethodId    String?
+  discountRate       Float             @default(0)
+  ncf                String?
+  ncfType            String?
+  noteType           NoteType?
+  originalInvoiceId  String?
+  itbisRetained      Float             @default(0)
+  client             Client            @relation(fields: [clientId], references: [id])
+  company            Company           @relation(fields: [companyId], references: [id])
+  quote              Quote?            @relation(fields: [quoteId], references: [id])
+  recurringInvoice   RecurringInvoice? @relation(fields: [recurringInvoiceId], references: [id])
+  originalInvoice    Invoice?          @relation("InvoiceNotes", fields: [originalInvoiceId], references: [id])
+  creditDebitNotes   Invoice[]         @relation("InvoiceNotes")
+  items              InvoiceItem[]
+  payments           Payment[]
+  eCfLogs            ECfLog[]
+
+  @@index([ncf])
+  @@index([originalInvoiceId])
+}
+
+model InvoiceItem {
+  id               String          @id @default(uuid())
+  invoiceId        String
+  description      String?
+  quantity         Float
+  unitPrice        Float
+  vatRate          Float
+  order            Int
+  type             ItemType        @default(SERVICE)
+  name             String
+  quoteItemId      String?
+  inventoryItemId  String?
+  crmProductId     String?
+  invoice          Invoice         @relation(fields: [invoiceId], references: [id])
+  quoteItem        QuoteItem?      @relation(fields: [quoteItemId], references: [id])
+  inventoryItem    InventoryItem?  @relation(fields: [inventoryItemId], references: [id])
+  paymentItems     PaymentItem[]
+
+  @@index([crmProductId])
+}
+
+model RecurringInvoice {
+  id                String                 @id @default(uuid())
+  clientId          String
+  companyId         String
+  paymentMethod     String?
+  paymentDetails    String?
+  notes             String?                @default("")
+  totalHT           Float
+  totalVAT          Float
+  totalTTC          Float
+  currency          Currency
+  frequency         RecurrenceFrequency
+  count             Int?
+  until             DateTime?
+  autoSend          Boolean                @default(false)
+  nextInvoiceDate   DateTime?
+  lastInvoiceDate   DateTime?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  paymentMethodId   String?
+  generatedInvoices Invoice[]
+  client            Client                 @relation(fields: [clientId], references: [id])
+  company           Company                @relation(fields: [companyId], references: [id])
+  items             RecurringInvoiceItem[]
+}
+
+model RecurringInvoiceItem {
+  id                 String           @id @default(uuid())
+  recurringInvoiceId String
+  description        String?
+  quantity           Float
+  unitPrice          Float
+  vatRate            Float
+  order              Int
+  type               ItemType         @default(SERVICE)
+  name               String
+  recurringInvoice   RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id])
+}
+
+model PaymentItem {
+  id            String      @id @default(uuid())
+  invoiceItemId String
+  amountPaid    Float
+  paymentId     String
+  invoiceItem   InvoiceItem @relation(fields: [invoiceItemId], references: [id])
+  Payment       Payment     @relation(fields: [paymentId], references: [id])
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  number          Int           @default(autoincrement())
+  rawNumber       String?
+  invoiceId       String
+  totalPaid       Float
+  paymentMethod   String        @default("")
+  paymentDetails  String        @default("")
+  paymentMethodId String?
+  paidAt          DateTime      @default(now())
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
+  items           PaymentItem[]
+}
+
+model PaymentMethod {
+  id        String            @id @default(cuid())
+  companyId String
+  name      String
+  details   String?
+  type      PaymentMethodType @default(BANK_TRANSFER)
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  companyId   String
+  description String
+  category    String?
+  amount      Float
+  currency    Currency @default(EUR)
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, category])
+}
+
+// ======= DOMINICAN REPUBLIC - DGII / NCF ======= //
+
+model NcfAuthorization {
+  id              String   @id @default(cuid())
+  companyId       String
+  ncfType         String   // "01"=Factura, "02"=Nota Débito, "03"=Nota Crédito, "04"=Consumidor Final
+  series          String   // Serie del NCF (ej: "1")
+  sequenceFrom    Int      // Desde
+  sequenceTo      Int      // Hasta
+  currentSequence Int      // Secuencia actual disponible
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, ncfType, series])
+  @@index([companyId])
+}
+
+model ECfLog {
+  id              String    @id @default(cuid())
+  invoiceId       String
+  companyId       String
+  ncf             String?
+  ncfType         String
+  xmlContent      String?
+  statusCode      String?
+  statusMessage   String?
+  dgiiResponse    Json?
+  requestAt       DateTime  @default(now())
+  responseAt      DateTime?
+  invoice         Invoice   @relation(fields: [invoiceId], references: [id])
+  company         Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([companyId])
+  @@index([ncf])
+}
+
+model DgiiReport606 {
+  id          String    @id @default(cuid())
+  companyId   String
+  period      String    // "202601" formato YYYYMM
+  submittedAt DateTime?
+  status      String    @default("DRAFT") // DRAFT, SUBMITTED, ACCEPTED
+  data        Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, period])
+}
+
+model DgiiReport607 {
+  id          String    @id @default(cuid())
+  companyId   String
+  period      String    // "202601" formato YYYYMM
+  submittedAt DateTime?
+  status      String    @default("DRAFT") // DRAFT, SUBMITTED, ACCEPTED
+  data        Json
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  company     Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, period])
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  type        ItemType @default(SERVICE)
+  unitPrice   Float    @default(0)
+  vatRate     Float    @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+}
+
+model InventoryItem {
+  id             String           @id @default(cuid())
+  companyId      String
+  name           String
+  description    String?
+  sku            String?
+  category       String?
+  quantity       Int              @default(0)
+  minQuantity    Int              @default(0)
+  unitPrice      Float            @default(0)
+  costPrice      Float            @default(0)
+  location       String?
+  isActive       Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  company        Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  stockMovements StockMovement[]
+  invoiceItems   InvoiceItem[]
+
+  @@unique([companyId, sku])
+}
+
+enum StockMovementType {
+  IN
+  OUT
+  ADJUSTMENT
+  SALE
+  RETURN
+}
+
+model StockMovement {
+  id              String             @id @default(cuid())
+  inventoryItemId String
+  companyId       String
+  type            StockMovementType
+  quantity        Int
+  previousQty     Int
+  newQty          Int
+  reason          String?
+  referenceType   String?
+  referenceId     String?
+  createdAt       DateTime           @default(now())
+  inventoryItem   InventoryItem      @relation(fields: [inventoryItemId], references: [id], onDelete: Cascade)
+  company         Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryItemId])
+  @@index([companyId])
+}
+
+model Signature {
+  id        String    @id @default(uuid())
+  quoteId   String
+  signedAt  DateTime?
+  expiresAt DateTime?
+  otpCode   String?
+  otpUsed   Boolean   @default(false)
+  isActive  Boolean   @default(true)
+  quote     Quote     @relation(fields: [quoteId], references: [id])
+}
+
+model PdfDownloadToken {
+  id           String          @id @default(cuid())
+  tokenHash    String          @unique
+  documentType PdfDocumentType
+  documentId   String
+  companyId    String
+  expiresAt    DateTime
+  createdAt    DateTime        @default(now())
+  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model CurrencyConversion {
+  id           String   @id @default(cuid())
+  rate         Float
+  expiresAt    DateTime
+  fromCurrency String
+  toCurrency   String
+
+  @@unique([fromCurrency, toCurrency])
+}
+
+model Plugin {
+  id            String     @id @default(cuid())
+  name          String
+  type          PluginType
+  config        Json?      @default("{}")
+  isActive      Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  webhookUrl    String?
+  webhookSecret String?
+}
+
+model Webhook {
+  id        String         @id @default(cuid())
+  url       String
+  secret    String?
+  type      WebhookType    @default(GENERIC)
+  events    WebhookEvent[]
+  companyId String
+  company   Company        @relation(fields: [companyId], references: [id])
+
+  @@index([companyId])
+}
+
+model InvitationCode {
+  id          String      @id @default(uuid())
+  code        String      @unique
+  createdAt   DateTime    @default(now())
+  expiresAt   DateTime?
+  usedAt      DateTime?
+  createdById String
+  usedById    String?     @unique
+  companyId   String
+  role        CompanyRole @default(MEMBER)
+  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy   User        @relation("CreatedInvitations", fields: [createdById], references: [id], onDelete: Cascade)
+  usedBy      User?       @relation("UsedInvitation", fields: [usedById], references: [id])
+
+  @@index([code])
+  @@index([createdById])
+  @@index([companyId])
+  @@map("invitation_code")
+}
+
+model User {
+  id                 String           @id
+  lastname           String
+  email              String           @unique
+  emailVerified      Boolean          @default(false)
+  image              String?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  name               String?
+  firstname          String
+  accounts           Account[]
+  apiKeys            ApiKey[]
+  createdInvitations InvitationCode[] @relation("CreatedInvitations")
+  usedInvitation     InvitationCode?  @relation("UsedInvitation")
+  sessions           Session[]
+  companies          UserCompany[]
+
+  @@map("user")
+}
+
+model ApiKey {
+  id         String    @id @default(cuid())
+  name       String
+  keyPrefix  String
+  keyHash    String    @unique
+  userId     String
+  companyId  String
+  scopes     String[]  @default([])
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([companyId])
+  @@map("api_key")
+}
+
+model Session {
+  id              String   @id
+  expiresAt       DateTime
+  token           String   @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  ipAddress       String?
+  userAgent       String?
+  userId          String
+  activeCompanyId String?
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model Log {
+  id        String   @id @default(uuid())
+  level     LogLevel
+  category  String
+  message   String
+  timestamp DateTime @default(now())
+  userId    String?
+  path      String?
+  details   Json
+
+  @@index([level])
+  @@index([category])
+  @@index([timestamp])
+}
+
 enum Currency {
   AED
   AFN
@@ -183,17 +847,15 @@ enum Currency {
   ZWL
 }
 
-// Email template types
 enum MailTemplateType {
   SIGNATURE_REQUEST
   VERIFICATION_CODE
   INVOICE
-  PAYMENT
   /// @deprecated use PAYMENT instead
   RECEIPT
+  PAYMENT
 }
 
-// Quote status
 enum QuoteStatus {
   DRAFT
   SENT
@@ -203,35 +865,36 @@ enum QuoteStatus {
   REJECTED
 }
 
-// Invoice status
 enum InvoiceStatus {
-  DRAFT
   PAID
   UNPAID
   OVERDUE
   SENT
+  DRAFT
   ARCHIVED
 }
 
-// Recurrence frequency
-enum RecurrenceFrequency {
-  WEEKLY // Every week
-  BIWEEKLY // Every 2 weeks
-  MONTHLY // Every month
-  BIMONTHLY // Every 2 months
-  QUARTERLY // Every 3 months
-  QUADMONTHLY // Every 4 months
-  SEMIANNUALLY // Every 6 months
-  ANNUALLY // Every year
+enum NoteType {
+  CREDIT
+  DEBIT
 }
 
-// Client type
+enum RecurrenceFrequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  BIMONTHLY
+  QUARTERLY
+  QUADMONTHLY
+  SEMIANNUALLY
+  ANNUALLY
+}
+
 enum ClientType {
   INDIVIDUAL
   COMPANY
 }
 
-// Item type (used for quote/invoice/recurring items)
 enum ItemType {
   HOUR
   DAY
@@ -240,7 +903,6 @@ enum ItemType {
   PRODUCT
 }
 
-// Payment method types
 enum PaymentMethodType {
   BANK_TRANSFER
   PAYPAL
@@ -249,386 +911,10 @@ enum PaymentMethodType {
   OTHER
 }
 
-// Role of a user within a company (multi-tenancy)
 enum CompanyRole {
   OWNER
   ADMIN
   MEMBER
-}
-
-// PDF Configuration
-model PDFConfig {
-  id      String   @id @default(cuid())
-  Company Company? // Relation inverse, sans arguments
-
-  fontFamily     String @default("Arial")
-  padding        Int    @default(40)
-  primaryColor   String @default("#2563eb")
-  secondaryColor String @default("#64748b")
-
-  includeLogo Boolean @default(false)
-  logoB64     String?
-
-  invoice        String @default("Invoice")
-  quote          String @default("Quote")
-  payment        String @default("Payment")
-  description    String @default("Description:")
-  date           String @default("Date:")
-  dueDate        String @default("Due date:")
-  validUntil     String @default("Valid until:")
-  paymentDate    String @default("Payment date:")
-  billTo         String @default("Bill to:")
-  quoteFor       String @default("Quote for:")
-  receivedFrom   String @default("Received from:")
-  invoiceRefer   String @default("Invoice reference:")
-  quantity       String @default("Qty")
-  vatRate        String @default("VAT (%)")
-  unitPrice      String @default("Unit price")
-  subtotal       String @default("Subtotal:")
-  discount       String @default("Discount:")
-  total          String @default("Total:")
-  vat            String @default("VAT:")
-  grandTotal     String @default("Grand total:")
-  totalReceived  String @default("Total received:")
-  notes          String @default("Notes:")
-  paymentMethod  String @default("Payment Method:")
-  paymentDetails String @default("Payment Details:")
-  type           String @default("Type")
-  hour           String @default("Hour")
-  day            String @default("Day")
-  deposit        String @default("Deposit")
-  service        String @default("Service")
-  product        String @default("Product")
-
-  paymentMethodBankTransfer String @default("Bank transfer")
-  paymentMethodPayPal       String @default("PayPal")
-  paymentMethodCash         String @default("Cash")
-  paymentMethodCheck        String @default("Check")
-  paymentMethodOther        String @default("Other")
-
-  VATId   String @default("VAT")
-  legalId String @default("Legal ID")
-}
-
-// Company model
-model Company {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  currency    Currency @default(EUR)
-  legalId     String?
-  foundedAt   DateTime
-  VAT         String?
-  exemptVat   Boolean  @default(false)
-  address      String
-  addressLine2 String? // Second line for address (apartment, suite, etc.)
-  postalCode   String
-  city         String
-  state        String? // State/Province (for US addresses, etc.)
-  country      String
-  phone        String
-  email        String
-
-  quoteStartingNumber   Int    @default(1) // Starting number for quotes
-  quoteNumberFormat     String @default("Q-{year}-{number:4}") // Ex: "Q-2025-0001"
-  invoiceStartingNumber Int    @default(1) // Starting number for invoices
-  invoiceNumberFormat   String @default("INV-{year}-{number:4}") // Ex: "INV-2025-0001"
-  paymentStartingNumber Int    @default(1) // Starting number for payments
-  paymentNumberFormat   String @default("PAY-{year}-{number:4}") // Ex: "PAY-2025-0001"
-
-  invoicePDFFormat String @default("facturx") // Ex: 'pdf' | 'facturx' | 'zugferd' | 'xrechnung' | 'ubl' | 'cii'
-
-  dateFormat String @default("dd/MM/yyyy") // Date format for quotes and invoices
-
-  createdAt DateTime @default(now())
-
-  pDFConfigId      String             @unique
-  pdfConfig        PDFConfig          @relation(fields: [pDFConfigId], references: [id])
-  Quote            Quote[]
-  Invoice          Invoice[]
-  PaymentMethod    PaymentMethod[]
-  emailTemplates   MailTemplate[]
-  RecurringInvoice RecurringInvoice[]
-  webhooks         Webhook[]
-  Article          Article[]
-  Client           Client[]
-  members          UserCompany[]
-  apiKeys          ApiKey[]
-  invitationCodes  InvitationCode[]
-  Expense          Expense[]
-  pdfDownloadTokens PdfDownloadToken[]
-}
-
-// Join table linking users to the companies they belong to, with a role
-model UserCompany {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId String
-  company   Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  role      CompanyRole @default(MEMBER)
-  createdAt DateTime    @default(now())
-
-  @@unique([userId, companyId])
-  @@index([userId])
-  @@index([companyId])
-  @@map("user_company")
-}
-
-// Client model
-model Client {
-  id               String             @id @default(cuid())
-  company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId        String
-  name             String
-  description      String?
-  legalId          String? // Legal identification number (SIRET, EIN, etc.)
-  VAT              String? // VAT number
-  foundedAt        DateTime? // Date when the client company was founded
-  contactFirstname String?
-  contactLastname  String?
-  contactEmail     String?
-  contactPhone     String?
-  address          String
-  addressLine2     String? // Second line for address (apartment, suite, etc.)
-  postalCode       String
-  city             String
-  state            String? // State/Province (for US addresses, etc.)
-  country          String
-  currency         Currency?
-  type             ClientType         @default(COMPANY)
-  salutation       String             @default("Mr") // Mr, Ms, Mrs (We need a default value for the invoice generation)
-  sex              String             @default("other") // male, female, other (We need a default value for the invoice generation)
-  title            String             @default("Doctor") // Doctor, Professor (We need a default value for the invoice generation)
-  isActive         Boolean            @default(true)
-  Quote            Quote[]
-  Invoice          Invoice[]
-  RecurringInvoice RecurringInvoice[]
-
-  @@index([companyId])
-}
-
-// Email templates
-model MailTemplate {
-  id        String           @id @default(cuid())
-  type      MailTemplateType
-  subject   String
-  body      String
-  company   Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId String
-
-  @@unique([companyId, type])
-}
-
-// Quote model
-model Quote {
-  id              String      @id @default(uuid())
-  number          Int         @default(autoincrement())
-  rawNumber       String? // Raw number for custom formats
-  title           String?
-  client          Client      @relation(fields: [clientId], references: [id])
-  clientId        String
-  company         Company     @relation(fields: [companyId], references: [id])
-  companyId       String
-  items           QuoteItem[]
-  status          QuoteStatus @default(DRAFT)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  validUntil      DateTime?
-  signedAt        DateTime?
-  viewedAt        DateTime?
-  signedBy        String?
-  discountRate    Float      @default(0)
-  totalHT         Float
-  totalVAT        Float
-  totalTTC        Float
-  currency        Currency
-  paymentMethod   String? // Ex: "Bank Transfer", "PayPal", "Cash"
-  paymentDetails  String? // Details for the payment method (e.g., bank account number)
-  paymentMethodId String?
-  notes           String?     @default("")
-  isActive        Boolean     @default(true)
-  Invoice         Invoice[]
-  signatures      Signature[]
-}
-
-model QuoteItem {
-  id           String        @id @default(uuid())
-  quote        Quote         @relation(fields: [quoteId], references: [id])
-  quoteId      String
-  name         String
-  description  String?
-  quantity     Float
-  unitPrice    Float
-  vatRate      Float // 20 for 20%
-  type         ItemType      @default(SERVICE)
-  order        Int // For sorting items in the quote pdf
-  invoiceItems InvoiceItem[]
-}
-
-// Invoice model
-model Invoice {
-  id                 String            @id @default(uuid())
-  number             Int               @default(autoincrement())
-  rawNumber          String? // Raw number for custom formats
-  quote              Quote?            @relation(fields: [quoteId], references: [id])
-  quoteId            String?
-  recurringInvoice   RecurringInvoice? @relation(fields: [recurringInvoiceId], references: [id])
-  recurringInvoiceId String?
-  client             Client            @relation(fields: [clientId], references: [id]) // Client receiving the invoice
-  clientId           String
-  company            Company           @relation(fields: [companyId], references: [id]) // Company issuing the invoice
-  companyId          String
-  items              InvoiceItem[]
-  status             InvoiceStatus     @default(DRAFT)
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
-  dueDate            DateTime
-  paidAt             DateTime?
-  paymentMethod      String? // Ex: "Bank Transfer", "PayPal", "Cash"
-  paymentDetails     String? // Details for the payment method (e.g., bank account number)
-  paymentMethodId    String?
-  notes              String?           @default("")
-  discountRate       Float             @default(0)
-  totalHT            Float
-  totalVAT           Float
-  totalTTC           Float
-  currency           Currency
-  isActive           Boolean           @default(true)
-  payments           Payment[]
-}
-
-model InvoiceItem {
-  id           String      @id @default(uuid())
-  invoice      Invoice     @relation(fields: [invoiceId], references: [id])
-  invoiceId    String
-  name         String
-  description  String?
-  quantity     Float
-  unitPrice    Float
-  vatRate      Float // 20 for 20%
-  type         ItemType    @default(SERVICE)
-  order        Int
-  quoteItem    QuoteItem?  @relation(fields: [quoteItemId], references: [id])
-  quoteItemId  String?
-  paymentItems PaymentItem[]
-}
-
-// Recurring invoice model
-model RecurringInvoice {
-  id                String                 @id @default(uuid())
-  client            Client                 @relation(fields: [clientId], references: [id])
-  clientId          String
-  company           Company                @relation(fields: [companyId], references: [id])
-  companyId         String
-  items             RecurringInvoiceItem[]
-  generatedInvoices Invoice[] // Relation inverse pour les factures générées
-  paymentMethod     String? // Ex: "Bank Transfer", "PayPal", "Cash"
-  paymentDetails    String? // Details for the payment method (e.g., bank account number)
-  paymentMethodId   String?
-  notes             String?                @default("")
-  totalHT           Float
-  totalVAT          Float
-  totalTTC          Float
-  currency          Currency
-  frequency         RecurrenceFrequency // Simplified recurrence frequency
-  count             Int? // Number of occurrences, null for infinite
-  until             DateTime? // End date for the recurrence
-  autoSend          Boolean                @default(false) // Auto-send generated invoices
-  nextInvoiceDate   DateTime? // Date for the next invoice generation
-  lastInvoiceDate   DateTime? // Date of the last generated invoice
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-}
-
-model RecurringInvoiceItem {
-  id                 String           @id @default(uuid())
-  recurringInvoice   RecurringInvoice @relation(fields: [recurringInvoiceId], references: [id])
-  recurringInvoiceId String
-  name               String
-  description        String?
-  quantity           Float
-  unitPrice          Float
-  vatRate            Float // 20 for 20%
-  type               ItemType         @default(SERVICE)
-  order              Int
-}
-
-// Payment models
-model PaymentItem {
-  id            String      @id @default(uuid())
-  invoiceItem   InvoiceItem @relation(fields: [invoiceItemId], references: [id])
-  invoiceItemId String
-  amountPaid    Float // Amount paid for this item
-  Payment       Payment     @relation(fields: [paymentId], references: [id])
-  paymentId     String
-}
-
-model Payment {
-  id              String        @id @default(cuid())
-  number          Int           @default(autoincrement())
-  rawNumber       String? // Raw number for custom formats
-  invoiceId       String
-  invoice         Invoice       @relation(fields: [invoiceId], references: [id])
-  items           PaymentItem[]
-  totalPaid       Float
-  paymentMethod   String        @default("") // Ex: "Bank Transfer", "PayPal", "Cash"
-  paymentDetails  String        @default("") // Details for the payment method (e.g., bank account number)
-  paymentMethodId String?
-  paidAt          DateTime      @default(now())
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-}
-
-model PaymentMethod {
-  id        String            @id @default(cuid())
-  company   Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId String
-  name      String
-  details   String? // Use this to store IBAN or other textual details
-  type      PaymentMethodType @default(BANK_TRANSFER)
-  isActive  Boolean           @default(true)
-  createdAt DateTime          @default(now())
-  updatedAt DateTime          @updatedAt
-}
-
-model Expense {
-  id          String   @id @default(cuid())
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
-  description String
-  amount      Float
-  currency    Currency @default(EUR)
-  date        DateTime @default(now())
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model Article {
-  id          String   @id @default(cuid())
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
-  name        String // label shown in the picker
-  description String? // text injected into the line item
-  type        ItemType @default(SERVICE)
-  unitPrice   Float    @default(0)
-  vatRate     Float    @default(0)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// Signature model
-model Signature {
-  id        String    @id @default(uuid())
-  quoteId   String
-  signedAt  DateTime?
-  expiresAt DateTime?
-  otpCode   String?
-  otpUsed   Boolean   @default(false)
-  quote     Quote     @relation(fields: [quoteId], references: [id])
-  isActive  Boolean   @default(true)
 }
 
 enum PdfDocumentType {
@@ -636,54 +922,12 @@ enum PdfDocumentType {
   INVOICE
 }
 
-// Short-lived, unauthenticated download link for a quote/invoice PDF — minted
-// by the MCP PDF tools so a chat client (e.g. OpenWebUI) that can't render an
-// embedded MCP resource block can still offer the user a clickable URL.
-model PdfDownloadToken {
-  id           String          @id @default(cuid())
-  tokenHash    String          @unique
-  documentType PdfDocumentType
-  documentId   String
-  companyId    String
-  company      Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  expiresAt    DateTime
-  createdAt    DateTime        @default(now())
-
-  @@index([documentId])
-}
-
-// Currency conversion model
-model CurrencyConversion {
-  id           String   @id @default(cuid())
-  fromCurrency String
-  toCurrency   String
-  rate         Float
-  expiresAt    DateTime
-
-  @@unique([fromCurrency, toCurrency])
-}
-
-// IN-APP PLUGINS
-
 enum PluginType {
   SIGNING
   STORAGE
 }
 
-model Plugin {
-  id            String     @id @default(cuid())
-  name          String
-  type          PluginType
-  config        Json?      @default("{}")
-  isActive      Boolean    @default(true)
-  webhookUrl    String?
-  webhookSecret String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-}
-
 enum WebhookEvent {
-  // Quote events
   QUOTE_CREATED
   QUOTE_UPDATED
   QUOTE_DELETED
@@ -696,8 +940,6 @@ enum WebhookEvent {
   QUOTE_PDF_GENERATED
   QUOTE_SEARCHED
   QUOTE_STATUS_CHANGED
-
-  // Invoice events
   INVOICE_CREATED
   INVOICE_UPDATED
   INVOICE_DELETED
@@ -710,17 +952,6 @@ enum WebhookEvent {
   INVOICE_CREATED_FROM_QUOTE
   INVOICE_SEARCHED
   INVOICE_STATUS_CHANGED
-
-  // Payment document events
-  PAYMENT_CREATED
-  PAYMENT_UPDATED
-  PAYMENT_DELETED
-  PAYMENT_SENT
-  PAYMENT_PDF_GENERATED
-  PAYMENT_CREATED_FROM_INVOICE
-  PAYMENT_SEARCHED
-
-  // Receipt events (deprecated, use PAYMENT_* instead)
   RECEIPT_CREATED
   RECEIPT_UPDATED
   RECEIPT_DELETED
@@ -728,16 +959,12 @@ enum WebhookEvent {
   RECEIPT_PDF_GENERATED
   RECEIPT_CREATED_FROM_INVOICE
   RECEIPT_SEARCHED
-
-  // Payment method events
   PAYMENT_RECEIVED
   PAYMENT_METHOD_CREATED
   PAYMENT_METHOD_UPDATED
   PAYMENT_METHOD_DELETED
   PAYMENT_METHOD_ACTIVATED
   PAYMENT_METHOD_DEACTIVATED
-
-  // Signature events
   SIGNATURE_CREATED
   SIGNATURE_COMPLETED
   SIGNATURE_EXPIRED
@@ -745,23 +972,17 @@ enum WebhookEvent {
   SIGNATURE_OTP_SENT
   SIGNATURE_VIEWED
   SIGNATURE_EMAIL_SENT
-
-  // Client events
   CLIENT_CREATED
   CLIENT_UPDATED
   CLIENT_DELETED
   CLIENT_ACTIVATED
   CLIENT_DEACTIVATED
   CLIENT_SEARCHED
-
-  // Company events
   COMPANY_CREATED
   COMPANY_UPDATED
   COMPANY_PDF_CONFIG_UPDATED
   COMPANY_EMAIL_TEMPLATE_UPDATED
   COMPANY_INFO_VIEWED
-
-  // Recurring Invoice events
   RECURRING_INVOICE_CREATED
   RECURRING_INVOICE_UPDATED
   RECURRING_INVOICE_DELETED
@@ -769,8 +990,6 @@ enum WebhookEvent {
   RECURRING_INVOICE_AUTO_SENT
   RECURRING_INVOICE_PROCESSED
   RECURRING_INVOICE_NEXT_DATE_CALCULATED
-
-  // Plugin events
   PLUGIN_ACTIVATED
   PLUGIN_DEACTIVATED
   PLUGIN_CONFIGURED
@@ -780,8 +999,6 @@ enum WebhookEvent {
   PLUGIN_PROVIDER_REQUESTED
   PLUGIN_FORMAT_REQUESTED
   PLUGIN_WEBHOOK_RECEIVED
-
-  // Authentication events
   USER_CREATED
   USER_UPDATED
   USER_LOGGED_IN
@@ -789,98 +1006,69 @@ enum WebhookEvent {
   USER_PROFILE_UPDATED
   USER_OIDC_LOGIN
   USER_OIDC_CALLBACK
-
-  // Email events
   EMAIL_SENT
   EMAIL_TEMPLATE_UPDATED
   EMAIL_FAILED
-
-  // Dashboard events
   DASHBOARD_VIEWED
   DASHBOARD_STATS_CALCULATED
   STATS_MONTHLY_REQUESTED
   STATS_YEARLY_REQUESTED
   CURRENCY_RATE_UPDATED
-
-  // System events
   APP_RESET
   APP_ALL_DATA_RESET
   OTP_REQUESTED
   OTP_VALIDATED
   OTP_EXPIRED
-
-  // Search events
   SEARCH_PERFORMED
-
-  // File events
   PDF_GENERATED
   XML_GENERATED
   FILE_DOWNLOADED
-
-  // Webhook events
   WEBHOOK_CREATED
   WEBHOOK_UPDATED
   WEBHOOK_DELETED
   WEBHOOK_TRIGGERED
   WEBHOOK_FAILED
-
-  // Quote Item events
   QUOTE_ITEM_CREATED
   QUOTE_ITEM_UPDATED
   QUOTE_ITEM_DELETED
-
-  // Invoice Item events
   INVOICE_ITEM_CREATED
   INVOICE_ITEM_UPDATED
   INVOICE_ITEM_DELETED
-
-  // Payment Item events
-  PAYMENT_ITEM_CREATED
-  PAYMENT_ITEM_UPDATED
-  PAYMENT_ITEM_DELETED
-
-  // Receipt Item events (deprecated, use PAYMENT_ITEM_* instead)
   RECEIPT_ITEM_CREATED
   RECEIPT_ITEM_UPDATED
   RECEIPT_ITEM_DELETED
-
-  // Recurring Invoice Item events
   RECURRING_INVOICE_ITEM_CREATED
   RECURRING_INVOICE_ITEM_UPDATED
   RECURRING_INVOICE_ITEM_DELETED
-
-  // Configuration events
   PDF_CONFIG_CREATED
   PDF_CONFIG_UPDATED
   EMAIL_TEMPLATE_CREATED
-
-  // Number formatting events
   QUOTE_NUMBER_GENERATED
   INVOICE_NUMBER_GENERATED
-  PAYMENT_NUMBER_GENERATED
   /// @deprecated use PAYMENT_NUMBER_GENERATED instead
   RECEIPT_NUMBER_GENERATED
-
-  // Background process events
   CRON_JOB_STARTED
   CRON_JOB_COMPLETED
   CRON_JOB_FAILED
-
-  // Currency events
   CURRENCY_CONVERSION_REQUESTED
   CURRENCY_RATE_FETCHED
-
-  // Mail template events
   MAIL_TEMPLATE_CREATED
   MAIL_TEMPLATE_UPDATED
-
-  // SSE events
   SSE_CONNECTION_ESTABLISHED
   SSE_DATA_STREAMED
-
-  // Validation events
   DATA_VALIDATED
   CONFIGURATION_VALIDATED
+  PAYMENT_CREATED
+  PAYMENT_UPDATED
+  PAYMENT_DELETED
+  PAYMENT_SENT
+  PAYMENT_PDF_GENERATED
+  PAYMENT_CREATED_FROM_INVOICE
+  PAYMENT_SEARCHED
+  PAYMENT_ITEM_CREATED
+  PAYMENT_ITEM_UPDATED
+  PAYMENT_ITEM_DELETED
+  PAYMENT_NUMBER_GENERATED
 }
 
 enum WebhookType {
@@ -893,138 +1081,6 @@ enum WebhookType {
   ROCKETCHAT
 }
 
-model Webhook {
-  id     String         @id @default(cuid())
-  url    String
-  secret String?
-  type   WebhookType    @default(GENERIC)
-  events WebhookEvent[]
-
-  // Link webhooks to a company (required)
-  company   Company @relation(fields: [companyId], references: [id])
-  companyId String
-
-  @@index([companyId])
-}
-
-// ======= INVITATION SYSTEM ======= //
-
-model InvitationCode {
-  id          String      @id @default(uuid())
-  code        String      @unique
-  createdAt   DateTime    @default(now())
-  expiresAt   DateTime?
-  usedAt      DateTime?
-  createdById String
-  createdBy   User        @relation("CreatedInvitations", fields: [createdById], references: [id], onDelete: Cascade)
-  usedById    String?     @unique
-  usedBy      User?       @relation("UsedInvitation", fields: [usedById], references: [id], onDelete: SetNull)
-  companyId   String
-  company     Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  role        CompanyRole @default(MEMBER)
-
-  @@index([code])
-  @@index([createdById])
-  @@index([companyId])
-  @@map("invitation_code")
-}
-
-// ======= BETTER AUTH INTEGRATION ======= //
-
-model User {
-  id            String    @id
-  name          String?
-  firstname     String
-  lastname      String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
-  apiKeys       ApiKey[]
-  companies     UserCompany[]
-
-  // Invitation relations
-  createdInvitations InvitationCode[] @relation("CreatedInvitations")
-  usedInvitation     InvitationCode?  @relation("UsedInvitation")
-
-  @@unique([email])
-  @@map("user")
-}
-
-model ApiKey {
-  id         String    @id @default(cuid())
-  name       String
-  keyPrefix  String
-  keyHash    String    @unique
-  userId     String
-  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  companyId  String
-  company    Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  scopes     String[]  @default([])
-  lastUsedAt DateTime?
-  createdAt  DateTime  @default(now())
-
-  @@index([userId])
-  @@index([companyId])
-  @@map("api_key")
-}
-
-model Session {
-  id              String   @id
-  expiresAt       DateTime
-  token           String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  ipAddress       String?
-  userAgent       String?
-  userId          String
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activeCompanyId String?
-
-  @@unique([token])
-  @@index([userId])
-  @@map("session")
-}
-
-model Account {
-  id                    String    @id
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-
-  @@index([userId])
-  @@map("account")
-}
-
-model Verification {
-  id         String   @id
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  @@index([identifier])
-  @@map("verification")
-}
-
-// ======= END OF BETTER AUTH INTEGRATION ======= //
-
-// ======= START OF LOGGING SYSTEM ======= //
-
 enum LogLevel {
   DEBUG
   INFO
@@ -1032,20 +1088,3 @@ enum LogLevel {
   ERROR
   FATAL
 }
-
-model Log {
-  id        String   @id @default(uuid())
-  level     LogLevel
-  category  String
-  message   String
-  timestamp DateTime @default(now())
-  userId    String?
-  path      String?
-  details   Json
-
-  @@index([level])
-  @@index([category])
-  @@index([timestamp])
-}
-
-// ======= END OF LOGGING SYSTEM ======= //

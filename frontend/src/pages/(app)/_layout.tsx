@@ -7,6 +7,7 @@ import { authClient } from "@/lib/auth";
 
 const ALLOWED_PATHS = [
     '/signature/[^/]+',
+    '/auth/unlock',
 ];
 
 const PageHeaderTitle = () => {
@@ -90,6 +91,12 @@ const Layout = () => {
             return <Navigate to="/auth/sign-in" />;
         }
         return <UnauthenticatedLayout />;
+    }
+
+    // Check if system is unlocked (except for unlock page itself)
+    const isUnlocked = localStorage.getItem("system_unlocked") === "true";
+    if (!isUnlocked && location.pathname !== "/auth/unlock") {
+        return <Navigate to="/auth/unlock" />;
     }
 
     return <AuthenticatedLayout />;

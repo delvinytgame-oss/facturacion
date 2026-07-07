@@ -1088,6 +1088,227 @@
             "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
         }
     },
+    "inventory": {
+        "title": "Inventory",
+        "description": "Manage your inventory stock levels.",
+        "empty": "No inventory items yet",
+        "actions": {
+            "cancel": "Cancel",
+            "add": "Add",
+            "save": "Save Changes",
+            "edit": "Edit",
+            "delete": "Delete",
+            "deleting": "Deleting...",
+            "export": "Export CSV",
+            "movements": "Movements",
+            "adjustStock": "Adjust Stock",
+            "crmImport": "Import from CRM"
+        },
+        "search": {
+            "placeholder": "Search inventory..."
+        },
+        "list": {
+            "add": "Add Item"
+        },
+        "stock": {
+            "inStock": "In Stock",
+            "lowStock": "Low Stock",
+            "outOfStock": "Out of Stock",
+            "lowStockAlert": "{{count}} item(s) below minimum stock level"
+        },
+        "filters": {
+            "allCategories": "All Categories",
+            "allLocations": "All Locations",
+            "allStatus": "All Status",
+            "inStock": "In Stock",
+            "lowStock": "Low Stock",
+            "outOfStock": "Out of Stock"
+        },
+        "table": {
+            "columns": {
+                "name": "Name",
+                "sku": "SKU",
+                "category": "Category",
+                "quantity": "Qty",
+                "minQuantity": "Min.",
+                "status": "Status",
+                "unitPrice": "Unit Price",
+                "costPrice": "Cost",
+                "location": "Location",
+                "actions": "Actions"
+            },
+            "emptyState": "No inventory items found"
+        },
+        "fields": {
+            "name": {
+                "label": "Name",
+                "placeholder": "e.g. Widget A"
+            },
+            "description": {
+                "label": "Description",
+                "placeholder": "Item description"
+            },
+            "sku": {
+                "label": "SKU",
+                "placeholder": "e.g. WDG-001"
+            },
+            "category": {
+                "label": "Category",
+                "placeholder": "e.g. Electronics"
+            },
+            "quantity": {
+                "label": "Quantity"
+            },
+            "minQuantity": {
+                "label": "Min. Quantity"
+            },
+            "unitPrice": {
+                "label": "Unit Price"
+            },
+            "costPrice": {
+                "label": "Cost Price"
+            },
+            "location": {
+                "label": "Location",
+                "placeholder": "e.g. Warehouse A"
+            }
+        },
+        "upsert": {
+            "title": {
+                "create": "Add Inventory Item",
+                "edit": "Edit Inventory Item"
+            },
+            "messages": {
+                "addSuccess": "Item added",
+                "addError": "Failed to add item",
+                "updateSuccess": "Item updated",
+                "updateError": "Failed to update item",
+                "deleteSuccess": "Item deleted",
+                "deleteError": "Failed to delete item"
+            }
+        },
+        "delete": {
+            "description": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+        },
+        "movements": {
+            "title": "Stock Movements",
+            "subtitle": "{{name}} (SKU: {{sku}})",
+            "empty": "No movements recorded",
+            "add": "New Movement",
+            "columns": {
+                "date": "Date",
+                "type": "Type",
+                "quantity": "Qty Change",
+                "previousQty": "Before",
+                "newQty": "After",
+                "reason": "Reason"
+            },
+            "types": {
+                "IN": "Entry",
+                "OUT": "Exit",
+                "ADJUSTMENT": "Adjustment",
+                "SALE": "Sale",
+                "RETURN": "Return"
+            },
+            "form": {
+                "type": "Movement Type",
+                "quantity": "Quantity",
+                "reason": "Reason (optional)",
+                "reasonPlaceholder": "e.g. Purchase order #123",
+                "submit": "Record Movement",
+                "messages": {
+                    "success": "Stock movement recorded",
+                    "error": "Failed to record movement"
+                }
+            }
+        },
+        "crmImport": {
+            "title": "Import Products from CRM",
+            "selectAccount": "Select CRM Account",
+            "selectAccountFirst": "Select a CRM account to view products",
+            "searchProducts": "Search products...",
+            "noProducts": "No products found",
+            "selected": "selected",
+            "selectAll": "Select All",
+            "deselectAll": "Deselect All",
+            "import": "Import",
+            "columns": {
+                "name": "Name",
+                "sku": "SKU",
+                "category": "Category",
+                "stock": "Stock",
+                "price": "Price",
+                "status": "Status"
+            }
+        }
+    },
+    "ncf": {
+        "title": "NCF Authorizations",
+        "description": "Manage your NCF (Número de Comprobante Fiscal) authorizations from DGII.",
+        "empty": "No NCF authorizations configured",
+        "actions": {
+            "add": "Add Authorization",
+            "edit": "Edit",
+            "deactivate": "Deactivate",
+            "cancel": "Cancel",
+            "save": "Save"
+        },
+        "fields": {
+            "ncfType": "Document Type",
+            "series": "Series",
+            "sequenceFrom": "From",
+            "sequenceTo": "To",
+            "currentSequence": "Current",
+            "remaining": "Remaining",
+            "expiresAt": "Expires",
+            "status": "Status"
+        },
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "expired": "Expired",
+            "exhausted": "Exhausted"
+        },
+        "upsert": {
+            "title": {
+                "create": "Add NCF Authorization",
+                "edit": "Edit NCF Authorization"
+            },
+            "messages": {
+                "createSuccess": "NCF authorization created",
+                "createError": "Failed to create NCF authorization",
+                "updateSuccess": "NCF authorization updated",
+                "updateError": "Failed to update NCF authorization"
+            }
+        },
+        "types": {
+            "01": "Fiscal Invoice",
+            "02": "Debit Note",
+            "03": "Credit Note",
+            "04": "Consumer Invoice",
+            "11": "Export Document",
+            "12": "Special Regime Invoice",
+            "13": "Export Credit Note",
+            "14": "Purchase Receipt",
+            "15": "Special Laws Regime",
+            "16": "Government"
+        }
+    },
+    "notes": {
+        "title": "Credit/Debit Notes",
+        "create": "Create Note",
+        "selectType": "Note Type",
+        "credit": "Credit Note",
+        "debit": "Debit Note",
+        "originalInvoice": "Original Invoice",
+        "reason": "Reason",
+        "reasonPlaceholder": "e.g. Product return, price adjustment",
+        "items": "Note Items",
+        "messages": {
+            "createSuccess": "Note created successfully",
+            "createError": "Failed to create note"
+        }
+    },
     "expenses": {
         "search": {
             "placeholder": "Search expenses..."
@@ -1897,6 +2118,8 @@
             "expenses": "Expenses",
             "clients": "Clients",
             "articles": "Articles",
+            "inventory": "Inventory",
+            "ncf": "NCF Authorizations",
             "paymentMethods": "Payment Methods",
             "stats": "Statistics",
             "settings": "Settings"

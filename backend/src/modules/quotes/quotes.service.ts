@@ -180,9 +180,9 @@ export class QuotesService {
             throw new BadRequestException('Client not found');
         }
 
-        const isVatExemptFrance = !!(company.exemptVat && (company.country || '').toUpperCase() === 'FRANCE');
+        const isVatExempt = !!(company.exemptVat && (company.country || '').toUpperCase() === 'FRANCE');
         const discountRate = clampDiscountRate(body.discountRate);
-        const totals = calculateDiscountedTotals(items, discountRate, { isVatExempt: isVatExemptFrance });
+        const totals = calculateDiscountedTotals(items, discountRate, { isVatExempt: isVatExempt });
 
         const quote = await prisma.quote.create({
             data: {
@@ -203,7 +203,7 @@ export class QuotesService {
                         description: item.description,
                         quantity: item.quantity,
                         unitPrice: item.unitPrice,
-                        vatRate: isVatExemptFrance ? 0 : (item.vatRate || 0),
+                        vatRate: isVatExempt ? 0 : (item.vatRate || 0),
                         type: item.type,
                         order: item.order || 0,
                     })),
@@ -256,9 +256,9 @@ export class QuotesService {
         const itemIdsToDelete = existingItemIds.filter(id => !incomingItemIds.includes(id));
 
         const company = await prisma.company.findUnique({ where: { id: companyId } });
-        const isVatExemptFrance = !!(company?.exemptVat && (company?.country || '').toUpperCase() === 'FRANCE');
+        const isVatExempt = !!(company?.exemptVat && (company?.country || '').toUpperCase() === 'FRANCE');
         const normalizedDiscountRate = clampDiscountRate(discountRate ?? existingQuote.discountRate);
-        const totals = calculateDiscountedTotals(items, normalizedDiscountRate, { isVatExempt: isVatExemptFrance });
+        const totals = calculateDiscountedTotals(items, normalizedDiscountRate, { isVatExempt: isVatExempt });
 
         const updateQuote = await prisma.quote.update({
             where: { id },
@@ -285,7 +285,7 @@ export class QuotesService {
                                 description: i.description,
                                 quantity: i.quantity,
                                 unitPrice: i.unitPrice,
-                                vatRate: isVatExemptFrance ? 0 : (i.vatRate || 0),
+                                vatRate: isVatExempt ? 0 : (i.vatRate || 0),
                                 type: i.type,
                                 order: i.order || 0,
                             },
@@ -297,7 +297,7 @@ export class QuotesService {
                             description: i.description,
                             quantity: i.quantity,
                             unitPrice: i.unitPrice,
-                            vatRate: isVatExemptFrance ? 0 : (i.vatRate || 0),
+                            vatRate: isVatExempt ? 0 : (i.vatRate || 0),
                             type: i.type,
                             order: i.order || 0,
                         })),

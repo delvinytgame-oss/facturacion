@@ -107,7 +107,7 @@ const prisma = new PrismaClient({ adapter }).$extends({
                 const result = (await query(args));
 
                 if (['Quote', 'Invoice', 'Payment'].includes(model)) {
-                    const typedResult = result as Prisma.QuoteGetPayload<{}> | Prisma.InvoiceGetPayload<{}> | Prisma.PaymentGetPayload<{}>;
+                    const typedResult = result as Prisma.QuoteGetPayload<Prisma.QuoteDefaultArgs> | Prisma.InvoiceGetPayload<Prisma.InvoiceDefaultArgs> | Prisma.PaymentGetPayload<Prisma.PaymentDefaultArgs>;
                     if (!typedResult.rawNumber) {
                         const companyId = await resolveCompanyId(model, typedResult);
                         const formattedNumber = await formatPattern(
@@ -130,7 +130,7 @@ const prisma = new PrismaClient({ adapter }).$extends({
                 const result = await query(args);
 
                 if (['Quote', 'Invoice', 'Payment'].includes(model)) {
-                    const typedResult = result as Prisma.QuoteGetPayload<{}> | Prisma.InvoiceGetPayload<{}> | Prisma.PaymentGetPayload<{}>;
+                    const typedResult = result as Prisma.QuoteGetPayload<Prisma.QuoteDefaultArgs> | Prisma.InvoiceGetPayload<Prisma.InvoiceDefaultArgs> | Prisma.PaymentGetPayload<Prisma.PaymentDefaultArgs>;
                     if (!typedResult.rawNumber) {
                         const companyId = await resolveCompanyId(model, typedResult);
                         const formattedNumber = await formatPattern(
